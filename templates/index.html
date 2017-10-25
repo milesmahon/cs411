@@ -1,0 +1,11 @@
+<h1>This is such a cool webpage!</h1>
+
+{% if data %}
+<ul>
+	{% for row in data %}
+	<li>
+		{{row[0]}}
+	</li>
+	{% endfor %}
+</ul>
+{% endif %}
