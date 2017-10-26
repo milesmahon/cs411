@@ -1,11 +1,36 @@
-<h1>This is such a cool webpage!</h1>
 
-{% if data %}
-<ul>
-	{% for row in data %}
-	<li>
-		{{row[0]}}
-	</li>
-	{% endfor %}
-</ul>
-{% endif %}
+<head>
+    <h1>CS411 Jonathan Miles Shenyue Stephanie</h1>
+
+{#    see comment in the <form> tag below for info abt this#}
+{#    <script type="text/javascript">#}
+{#        function getSongFromAPI (form) {#}
+{#            var TestVar = form.searchquery.value;#}
+{#            alert ("You typed: " + TestVar);#}
+{#        }#}
+{#    </script>#}
+</head>
+<body>
+
+    <form action="/result" method="POST">
+        Song Title:<br>
+        <input type="text" name="searchquery">
+        <input type="submit" value="Submit">
+
+{#        if I wanted to run some js when the user clicks a button: #}
+{#        <input type="button" value="Submit" onClick="getSongFromAPI(this.form)">#}
+    </form>
+
+</body>
+
+
+{#when we "return render_template" we pass a "data" object and can use it like this:#}
+{#{% if data %}#}
+{#<ul>#}
+{#	{% for row in data %}#}
+{#	<li>#}
+{#		{{row[0]}}#}
+{#	</li>#}
+{#	{% endfor %}#}
+{#</ul>#}
+{#{% endif %}#}
