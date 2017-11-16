@@ -4,15 +4,15 @@ from oauth import OAuthSignIn
 from flask_security import LoginForm, Security, SQLAlchemyUserDatastore, RoleMixin, login_required
 from flask_login import LoginManager, UserMixin, login_user, logout_user,\
     current_user
-
 import config
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'top secret!'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:yankees2@localhost/sync'
+app.config['SQLALCHEMY_DATABASE_URI'] = config.SQL_ROOT
 app.config['OAUTH_CREDENTIALS'] = {
 	'facebook':{
-	'id': '1241361279327169',
-	'secret': '58e8c5b5284ae3a728bcb9eeede81308'
+	'id': config.FB_APP_ID,
+	'secret': config.FB_SECRET_KEY
 }}
 
 #app.config['SECURITY_POST_LOGIN_VIEW'] = '/'
