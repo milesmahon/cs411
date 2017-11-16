@@ -20,8 +20,14 @@
 			<h2>Share your Spotify and Youtube audio with nearby friends</h2>
 		</div>
 		<br><br><br>
-		<a href="showLogIn" role="button">Log in with Facebook</a>
-		<br><br><br><br>
+		{% if current_user.is_authenticated %}
+		<h2>Hi, {{ current_user.name }}</h2>
+        <br>
+        <a href="home" role="button">(home)</a>
+		{% else %}
+		<p><a href="{{ url_for('oauth_authorize', provider='facebook') }}">Login with Facebook
+			{% endif %}
+			<br><br><br><br>
 	</div>
 
 </body>
