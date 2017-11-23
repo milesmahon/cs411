@@ -13,7 +13,11 @@ app.config['OAUTH_CREDENTIALS'] = {
 	'facebook':{
 	'id': config.FB_APP_ID,
 	'secret': config.FB_SECRET_KEY
-}}
+},
+    'spotify':{
+        'id':config.SPOTIFY_APP_ID,
+        'secret':config.SPOTIFY_SECRET_KEY
+    }}
 
 #app.config['SECURITY_POST_LOGIN_VIEW'] = '/'
 
@@ -72,9 +76,11 @@ def oauth_callback(provider):
         return redirect(url_for('index'))
     oauth = OAuthSignIn.get_provider(provider)
     social_id, username, email = oauth.callback()
+    print(social_id)
     if social_id is None:
         flash('Authentication failed.')
         return redirect(url_for('index'))
+    print('here1')
     user = User.query.filter_by(social_id=social_id).first()
     if not user:
         user = User(social_id=social_id, name=username, email=email)
