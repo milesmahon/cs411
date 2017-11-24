@@ -66,15 +66,18 @@ def logout():
 
 @app.route('/info')
 def get_info():
-    print("access token two =" + ACCESS_TOKEN)
     auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN)}
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
     return render_template('info.html', context_data=context_data)
 
-
-
+@app.route('/pause')
+def pause():
+    auth_header = {"Authorization": "Bearer {}".format(ACCESS_TOKEN)}
+    pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
+    pause_response = requests.put(pause_endpoint, headers=auth_header)
+    return redirect(url_for('home'))
 #@app.route('/showLogIn')
 #def showLogIn():
 #	return render_template('login.html')

@@ -91,11 +91,11 @@ class SpotifySignIn(OAuthSignIn):
 
     def authorize(self):
         spotify_auth_url = (self.service.get_authorize_url(
-            scope='user-read-private user-read-email user-read-playback-state',
+            scope='user-read-private user-read-email user-read-playback-state user-modify-playback-state',
             response_type='code',
             redirect_uri=self.get_callback_url())
         )
-        print("authorize URL =" + spotify_auth_url)
+        #print("authorize URL =" + spotify_auth_url)
         return redirect(spotify_auth_url)
 
     def callback(self):
@@ -113,8 +113,6 @@ class SpotifySignIn(OAuthSignIn):
             headers={'Authorization':'Basic {}'.format(base64.b64encode("{}:{}".format(self.consumer_id,self.consumer_secret)))},
             decoder=decode_json
         )
-        #access_token =  ouath_session["access_token"]
-        #print("access token" + access_token)
         access_token = oauth_session.access_token_response.json()['access_token']
         print('access token ='+ access_token)
 
