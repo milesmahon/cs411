@@ -91,7 +91,7 @@ class SpotifySignIn(OAuthSignIn):
 
     def authorize(self):
         spotify_auth_url = (self.service.get_authorize_url(
-            scope='user-read-private user-read-email',
+            scope='user-read-private user-read-email user-read-playback-state',
             response_type='code',
             redirect_uri=self.get_callback_url())
         )
@@ -124,6 +124,7 @@ class SpotifySignIn(OAuthSignIn):
         profile_response = requests.get(user_profile_endpoint, headers =authorize_header)
         profile_data = json.loads(profile_response.text)
         return(
+            access_token,
             'spotify$' + profile_data['id'],
             profile_data['id'],
             profile_data['email']
