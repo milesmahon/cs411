@@ -4,13 +4,17 @@ from oauth import OAuthSignIn
 from flask_security import LoginForm, Security, SQLAlchemyUserDatastore, RoleMixin, login_required
 from flask_login import LoginManager, UserMixin, login_user, logout_user,\
     current_user
+from flask_socketio import SocketIO, send, emit
 import config
 import requests
 import json
 
+async_mode = None
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'top secret!'
+app.config['SECRET_KEY'] = config.SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQL_ROOT
+socketio = SocketIO(app, async_mode=async_mode)
 app.config['OAUTH_CREDENTIALS'] = {
 	'facebook':{
 	'id': config.FB_APP_ID,
@@ -24,7 +28,7 @@ app.config['OAUTH_CREDENTIALS'] = {
 #app.config['SECURITY_POST_LOGIN_VIEW'] = '/'
 
 db = SQLAlchemy(app)
-ACCESS_TOKEN = None
+ACCESS_TOKEN = {}
 REFRESH_TOKEN = None
 PROFILE_DATA = None
 
@@ -53,7 +57,12 @@ security = Security(app, SQLAlchemyUserDatastore(db, User, Role))
 
 @app.route("/")
 def index():
-	return render_template('index.html')
+    return render_template('index.html')
+
+
+@app.route("/host")
+def host():
+    return render_template('host.html', async_mode=socketio.async_mode)
 
 @app.route('/home')
 def home():
@@ -66,7 +75,10 @@ def logout():
 
 @app.route('/info')
 def get_info():
-    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN)}
+    print(ACCESS_TOKEN)
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    print("access token = " + access_token)
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
@@ -96,8 +108,6 @@ def oauth_callback(provider):
     oauth = OAuthSignIn.get_provider(provider)
     access_token, social_id, username, email = oauth.callback()
     #PROFILE_DATA = profile_data
-    global ACCESS_TOKEN
-    ACCESS_TOKEN = access_token
     if social_id is None:
         flash('Authentication failed.')
         return redirect(url_for('index'))
@@ -107,8 +117,14 @@ def oauth_callback(provider):
         db.session.add(user)
         db.session.commit()
     login_user(user, True)
+    global ACCESS_TOKEN
+    ACCESS_TOKEN[str(current_user.id)] = access_token
     return redirect(url_for('index'))
+
+@socketio.on('connect', namespace='/test')
+def test_connect():
+    emit('my response', {'data': 'Connected'})
 
 
 if __name__ == "__main__":
-	app.run(debug=True)
+	socketio.run(app, debug=True)

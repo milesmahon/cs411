@@ -114,7 +114,6 @@ class SpotifySignIn(OAuthSignIn):
             decoder=decode_json
         )
         access_token = oauth_session.access_token_response.json()['access_token']
-        print('access token ='+ access_token)
 
         #get user profile data
         authorize_header = {"Authorization":"Bearer {}".format(access_token)}
