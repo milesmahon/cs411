@@ -25,7 +25,8 @@
         <br>
         <a href="home" role="button">(home)</a>
 		{% else %}
-		<p><a href="{{ url_for('oauth_authorize', provider='facebook') }}">Login with Facebook
+        <p><a href="{{ url_for('oauth_authorize', provider='facebook') }}">Login with Facebook</a></p>
+        <p><a href="{{ url_for('oauth_authorize', provider='spotify') }}">Login with Spotify</a></p>
 			{% endif %}
 			<br><br><br><br>
 	</div>

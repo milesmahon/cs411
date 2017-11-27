@@ -5,6 +5,8 @@ from flask_security import LoginForm, Security, SQLAlchemyUserDatastore, RoleMix
 from flask_login import LoginManager, UserMixin, login_user, logout_user,\
     current_user
 import config
+import requests
+import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'top secret!'
@@ -13,11 +15,18 @@ app.config['OAUTH_CREDENTIALS'] = {
 	'facebook':{
 	'id': config.FB_APP_ID,
 	'secret': config.FB_SECRET_KEY
-}}
+},
+    'spotify':{
+        'id':config.SPOTIFY_APP_ID,
+        'secret':config.SPOTIFY_SECRET_KEY
+    }}
 
 #app.config['SECURITY_POST_LOGIN_VIEW'] = '/'
 
 db = SQLAlchemy(app)
+ACCESS_TOKEN = None
+REFRESH_TOKEN = None
+PROFILE_DATA = None
 
 # role model
 class Role(db.Model, RoleMixin):
@@ -55,6 +64,20 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
+@app.route('/info')
+def get_info():
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN)}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data =  json.loads(context_response.text)
+    return render_template('info.html', context_data=context_data)
+
+@app.route('/pause')
+def pause():
+    auth_header = {"Authorization": "Bearer {}".format(ACCESS_TOKEN)}
+    pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
+    pause_response = requests.put(pause_endpoint, headers=auth_header)
+    return redirect(url_for('home'))
 #@app.route('/showLogIn')
 #def showLogIn():
 #	return render_template('login.html')
@@ -71,7 +94,10 @@ def oauth_callback(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index'))
     oauth = OAuthSignIn.get_provider(provider)
-    social_id, username, email = oauth.callback()
+    access_token, social_id, username, email = oauth.callback()
+    #PROFILE_DATA = profile_data
+    global ACCESS_TOKEN
+    ACCESS_TOKEN = access_token
     if social_id is None:
         flash('Authentication failed.')
         return redirect(url_for('index'))

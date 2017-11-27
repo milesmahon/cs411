@@ -18,7 +18,7 @@
 
 	<div id="mySidenav" class="sidenav">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-		<a href="#">Session Info</a>
+		<a href="{{ url_for('get_info') }}">Session Info</a>
 		<a href="#">Spotify</a>
 		<a href="#">YouTube</a>
 		<a href="#">Find Friends</a>
@@ -28,7 +28,9 @@
 	<!-- Menu bars -->
 	<div class="container-right">
 		<div class="menu">
+			<a href="#">
 			<span onclick="openNav()">&equiv;</span>
+				</a>
 		</div>
 
 		<div id="main">
@@ -39,6 +41,9 @@
 				</div>
 				<div class="button">
 					<button>Join a Sync Session</button>
+				</div>
+				<div class="button">
+					<a href = "{{ url_for('pause') }}"> Pause</a>
 				</div>
 			</div>
 		</div>
