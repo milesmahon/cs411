@@ -37,14 +37,12 @@
 			<h1>Sync</h1>
 			<div class="container-button">
 				<div class="button">
-					<button>Host a Sync Session</button>
+					<a href="{{ url_for('host') }}"/><button>Host a Sync Session</button></a>
 				</div>
 				<div class="button">
 					<button>Join a Sync Session</button>
 				</div>
-				<div class="button">
-					<a href = "{{ url_for('pause') }}"> Pause</a>
-				</div>
+				<a href=" {{ url_for('pause') }}">Pause</a>
 			</div>
 		</div>
 	</div>
