@@ -86,9 +86,11 @@ def get_info():
 
 @app.route('/pause')
 def pause():
-    auth_header = {"Authorization": "Bearer {}".format(ACCESS_TOKEN)}
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    auth_header = {"Authorization": "Bearer {}".format(access_token)}
     pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
     pause_response = requests.put(pause_endpoint, headers=auth_header)
+    print(pause_response)
     return redirect(url_for('home'))
 #@app.route('/showLogIn')
 #def showLogIn():
