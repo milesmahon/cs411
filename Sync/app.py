@@ -64,6 +64,14 @@ def index():
 def host():
     return render_template('host.html', async_mode=socketio.async_mode)
 
+@app.route("/host", methods = ['POST'])
+def host_pause_guest():
+    text = request.form['text']
+    processed_text = text.upper()
+    print(processed_text)
+    return pause(processed_text)
+
+
 @app.route('/home')
 def home():
 	return render_template('home.html')
@@ -76,16 +84,17 @@ def logout():
 @app.route('/info')
 def get_info():
     access_token = ACCESS_TOKEN[str(current_user.id)]
-    print("access token = " + access_token)
+    #print("access token = " + access_token)
     auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
+    print(context_data)
     return render_template('info.html', context_data=context_data)
 
 @app.route('/pause')
-def pause():
-    access_token = ACCESS_TOKEN[str(current_user.id)]
+def pause(user):
+    access_token = ACCESS_TOKEN[str(user)]
     auth_header = {"Authorization": "Bearer {}".format(access_token)}
     pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
     pause_response = requests.put(pause_endpoint, headers=auth_header)
