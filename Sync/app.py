@@ -28,7 +28,7 @@ app.config['OAUTH_CREDENTIALS'] = {
 #app.config['SECURITY_POST_LOGIN_VIEW'] = '/'
 
 db = SQLAlchemy(app)
-ACCESS_TOKEN = {}
+ACCESS_TOKEN =  {}
 REFRESH_TOKEN = None
 PROFILE_DATA = None
 
@@ -48,7 +48,6 @@ class User(db.Model, UserMixin):
 	#password = db.Column(db.String(50))
 	active = db.Column(db.Boolean)
 	name = db.Column(db.String(50))
-
 
 
 security = Security(app, SQLAlchemyUserDatastore(db, User, Role))
@@ -82,16 +81,70 @@ def get_info():
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
+    print (json.dumps(context_data, indent=4, sort_keys=True))
     return render_template('info.html', context_data=context_data)
 
 @app.route('/pause')
 def pause():
+    # print("access token: " + ACCESS_TOKEN)
     access_token = ACCESS_TOKEN[str(current_user.id)]
     auth_header = {"Authorization": "Bearer {}".format(access_token)}
     pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
     pause_response = requests.put(pause_endpoint, headers=auth_header)
-    print(pause_response)
+    print(ACCESS_TOKEN)
+    if pause_response:
+        print(pause_response.text)
     return redirect(url_for('home'))
+
+@app.route('/play') #TODO: correct url? same q for pause method
+def play():
+    #dummy header for other play method
+
+    print(ACCESS_TOKEN)
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    # print("access token = " + access_token)
+    auth_header = {"Authorization": "Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data = json.loads(context_response.text)
+    print(json.dumps(context_data, indent=4, sort_keys=True))
+
+    return play(context_data)
+
+def play(song_info):
+    #takes json song info and plays selected song at correct time
+    #currently ASSUMES the user is not at the same point in song/same song as host
+
+    #/me/player endpoint gives us song_info json
+
+    #for /play endpoint
+    context_uri = song_info['item']['uri'] #get context uri of song
+
+    #for /seek endpoint
+    position_ms = song_info['progress_ms']
+
+    # hit /play endpoint
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    auth_header = {"Authorization": "Bearer {}".format(access_token)}
+    play_endpoint = "https://api.spotify.com/v1/me/player/play"
+    play_response = requests.put(play_endpoint, headers=auth_header, params={('context_uri', context_uri)})
+    print(ACCESS_TOKEN)
+    if play_response:
+        print(play_response.text)
+
+
+    #TODO:TESTING only! this next line
+    position_ms = 100000
+
+    # hit /seek endpoint
+    seek_endpoint = "https://api.spotify.com/v1/me/player/seek"
+    seek_response = requests.put(seek_endpoint, headers=auth_header, params={('position_ms', position_ms)})
+    print(ACCESS_TOKEN)
+    if seek_response:
+        print(seek_response.text)
+    return redirect(url_for('home'))
+
+
 #@app.route('/showLogIn')
 #def showLogIn():
 #	return render_template('login.html')
