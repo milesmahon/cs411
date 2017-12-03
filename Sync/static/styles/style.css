@@ -9,6 +9,14 @@ h1 {
 	color: #3498DB;
 }
 
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
 .container-center{
 	width: 450px;
 	background-color: white;
@@ -19,7 +27,7 @@ h1 {
 
 }
 
-.container-right{
+.container-left{
 	padding-right: 2em;
 	padding-left: 2em;
 	background-color: white;
@@ -35,12 +43,12 @@ h1 {
 	padding-bottom: 10em;
 }
 
-.button {
-	float: right;
+.button_align {
+	float: left;
 }
 
 
-button {
+.button {
 	background: #3498DB;
 	color: white;
 	font-size: 2em;
@@ -57,12 +65,40 @@ button {
 	width: 250px;
 }
 
+a.button{
+    color: white;
+}
+
+.button:hover {
+	background-color: #2E86C1;
+}
+
+.player {
+    color: white;
+    background-color: #3F3F3F;
+    border-radius: 20px;
+    text-align: center;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.player img{
+    margin: 1em;
+}
+.player h2{
+    font-size: 2em;
+    color: #3498DB;
+}
+
+.player p{
+    font-size: 25px;
+}
 
 /**********************************************************************************
 
 Log In
 
-***********************************************************************************/
+**********************************************************************************
 
 .login {
 	text-align: center;
@@ -110,6 +146,13 @@ input {
 	background-color: #2E86C1;
 }
 
+.btn a:hover {
+    text-decoration: none;
+}
+
+a.btn {
+    text-decoration: none;
+}
  
 .login-link {
  	font-size: 12px;
@@ -118,6 +161,8 @@ input {
 	margin-top: 12px;
 }
 
+**/
+
 /**********************************************************************************
 
 Side Navigation Menu
@@ -125,7 +170,7 @@ Side Navigation Menu
 ***********************************************************************************/
 .menu {
 	font-size: 5em;
-	color: #AEB6BF;
+    color: #566573;
 	float: left;
 }
 

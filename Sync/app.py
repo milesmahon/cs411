@@ -21,8 +21,8 @@ app.config['OAUTH_CREDENTIALS'] = {
 	'secret': config.FB_SECRET_KEY
 },
     'spotify':{
-        'id':config.SPOTIFY_APP_ID,
-        'secret':config.SPOTIFY_SECRET_KEY
+    	'id':config.SPOTIFY_APP_ID,
+    	'secret':config.SPOTIFY_SECRET_KEY
     }}
 
 #app.config['SECURITY_POST_LOGIN_VIEW'] = '/'
@@ -64,16 +64,44 @@ def index():
 def host():
     return render_template('host.html', async_mode=socketio.async_mode)
 
+@app.route("/guest")
+def guest():
+    return render_template('guest.html', async_mode=socketio.async_mode)
+
 @app.route('/home')
 def home():
 	return render_template('home.html')
+
+@app.route('/guest_home')
+def guest_home():
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    print("access token = " + access_token)
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data =  json.loads(context_response.text)
+    return render_template('guest_home.html', context_data=context_data)
+
+@app.route('/host_home')
+def host_home():
+    return render_template('host_home.html')
 
 @app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('home'))
-
+"""
 @app.route('/info')
+def get_info():
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    print("access token = " + access_token)
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data =  json.loads(context_response.text)
+    return render_template('info.html', context_data=context_data)
+"""
+@app.route('/guest')
 def get_info():
     access_token = ACCESS_TOKEN[str(current_user.id)]
     print("access token = " + access_token)
@@ -140,4 +168,5 @@ def test_disconnect():
 
 
 if __name__ == "__main__":
+    #db.create_all()
 	socketio.run(app, debug=True)
