@@ -10,6 +10,7 @@ from flask_socketio import SocketIO, send, emit, join_room, leave_room, \
 import config
 import requests
 import json
+from collections import defaultdict
 
 async_mode = None
 
@@ -36,6 +37,7 @@ ACCESS_TOKEN =  {}
 REFRESH_TOKEN = None
 PROFILE_DATA = None
 hostl = []
+SESSION_USERS = defaultdict(list)
 
 # role model
 class Role(db.Model, RoleMixin):
@@ -85,11 +87,12 @@ def guest():
     return render_template('guest.html', async_mode=socketio.async_mode)
 
 @app.route("/host", methods = ['POST'])
-def host_pause_guest():
-    text = request.form['pause']
+def host_sesh_create():
+    text = request.form['sname']
     processed_text = text.upper()
-    print(processed_text)
-    return pause(processed_text)
+    SESSION_USERS[processed_text].append(current_user.id)
+    sessioninfo = SESSION_USERS[processed_text]
+    return render_template('host.html', sessioninfo = sessioninfo, sesh = processed_text)
 
 
 @app.route('/home')
@@ -99,9 +102,12 @@ def home():
 @app.route('/room')
 def room():
     hosts = hostl
-    print(hosts)
-    print(current_user.id)
-    return render_template('room.html', hosts = hosts)
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data =  json.loads(context_response.text)
+    return render_template('room.html', hosts = hosts, context_data = context_data)
 
 @app.route('/guest_home')
 def guest_home():

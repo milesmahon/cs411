@@ -36,9 +36,16 @@
             <br>
 			<h2>Enter a Session ID to create the session</h2>
             <br>
-
+            <form method="POST">
+                <input type = "text" name = "sname" > <br> <br>
+                <input type="submit" value="Session Name">
+            </form>
             <br>
-            <h2><a href="host_home" role="button">Create</a></h2>
+            {% if sesh %}
+            {{ sesh }}:
+            {{ sessioninfo[0].id }}
+            {% endif %}
+            <br>
             
             <br><br><br>
             
