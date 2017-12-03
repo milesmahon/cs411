@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, url_for, request, redirect, session, flash
+from threading import Lock
 from flask_sqlalchemy import SQLAlchemy
 from oauth import OAuthSignIn
 from flask_security import LoginForm, Security, SQLAlchemyUserDatastore, RoleMixin, login_required
 from flask_login import LoginManager, UserMixin, login_user, logout_user,\
     current_user
-from flask_socketio import SocketIO, send, emit
+from flask_socketio import SocketIO, send, emit, join_room, leave_room, \
+    close_room, rooms, disconnect
 import config
 import requests
 import json
@@ -15,6 +17,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = config.SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQL_ROOT
 socketio = SocketIO(app, async_mode=async_mode)
+thread = None
+thread_lock = Lock()
 app.config['OAUTH_CREDENTIALS'] = {
 	'facebook':{
 	'id': config.FB_APP_ID,
@@ -31,7 +35,7 @@ db = SQLAlchemy(app)
 ACCESS_TOKEN =  {}
 REFRESH_TOKEN = None
 PROFILE_DATA = None
-user_data = []
+hostl = []
 
 # role model
 class Role(db.Model, RoleMixin):
@@ -54,6 +58,16 @@ class User(db.Model, UserMixin):
 security = Security(app, SQLAlchemyUserDatastore(db, User, Role))
 #Social(app, SQLAlchemyConnectionDatastore(db, Connection))
 
+def background_thread():
+    """Example of how to send server generated events to clients."""
+    count = 0
+    while True:
+        socketio.sleep(10)
+        count += 1
+        socketio.emit('my_response',
+                      {'data': 'Server generated event', 'count': count},
+                      namespace='/test')
+
 
 @app.route("/")
 def index():
@@ -62,6 +76,7 @@ def index():
 
 @app.route("/host")
 def host():
+    hostl.append(current_user.id)
     return render_template('host.html', async_mode=socketio.async_mode)
 
 
@@ -80,6 +95,13 @@ def host_pause_guest():
 @app.route('/home')
 def home():
 	return render_template('home.html')
+
+@app.route('/room')
+def room():
+    hosts = hostl
+    print(hosts)
+    print(current_user.id)
+    return render_template('room.html', hosts = hosts)
 
 @app.route('/guest_home')
 def guest_home():
@@ -217,22 +239,57 @@ def oauth_callback(provider):
     ACCESS_TOKEN[str(current_user.id)] = access_token
     return redirect(url_for('index'))
 
-@socketio.on('my event', namespace='/test')
-def test_message(message):
-    emit('my response', {'data': message['data']})
+@socketio.on('join', namespace='/test')
+def join(message):
+    join_room(message['room'])
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'In rooms: ' + ', '.join(rooms()),
+          'count': session['receive_count']})
 
-@socketio.on('my broadcast event', namespace='/test')
-def test_message(message):
-    emit('my response', {'data': message['data']}, broadcast=True)
+
+@socketio.on('leave', namespace='/test')
+def leave(message):
+    leave_room(message['room'])
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'In rooms: ' + ', '.join(rooms()),
+          'count': session['receive_count']})
+
+
+@socketio.on('close_room', namespace='/test')
+def close(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response', {'data': 'Room ' + message['room'] + ' is closing.',
+                         'count': session['receive_count']},
+         room=message['room'])
+    close_room(message['room'])
+
+
+@socketio.on('my_room_event', namespace='/test')
+def send_room_message(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': message['data'], 'count': session['receive_count']},
+         room=message['room'])
+
+
+@socketio.on('disconnect_request', namespace='/test')
+def disconnect_request():
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'Disconnected!', 'count': session['receive_count']})
+    disconnect()
+
+
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
-    print(current_user.id)
-    emit('my response', {'data': current_user.id})
-
-@socketio.on('disconnect', namespace='/test')
-def test_disconnect():
-    print('Client disconnected')
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(target=background_thread)
+    emit('my_response', {'data': 'Connected', 'count': 0})
 
 
 if __name__ == "__main__":

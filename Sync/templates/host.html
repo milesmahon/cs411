@@ -12,7 +12,8 @@
         <link rel= "stylesheet" type= "text/css" href= "../static/styles/style.css">
         <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
         <script type="text/javascript" src="../static/js/script.js"></script>
-    </head>
+
+</head>
     
 <body>
 
@@ -35,9 +36,7 @@
             <br>
 			<h2>Enter a Session ID to create the session</h2>
             <br>
-            <form>
-            <input type="text" class="login-field" value="" placeholder="Session ID" name="session_id">
-            </form>
+
             <br>
             <h2><a href="host_home" role="button">Create</a></h2>
             
@@ -46,11 +45,9 @@
             <p>(After host inputs session id, this will appear to check to see who joins session:)</p>
             <h2>Waiting for guests to join session</h2>
             <div class="loader"></div>
-            <h2><a href="host_home" role="button">Begin Session</a></h2>
+            <h2><a href="room" role="button">Begin Session</a></h2>
 		</div>
 	</div>
-
-
 
 </body>
 </html>
