@@ -31,6 +31,7 @@ db = SQLAlchemy(app)
 ACCESS_TOKEN =  {}
 REFRESH_TOKEN = None
 PROFILE_DATA = None
+user_data = []
 
 # role model
 class Role(db.Model, RoleMixin):
@@ -65,7 +66,7 @@ def host():
 
 @app.route("/host", methods = ['POST'])
 def host_pause_guest():
-    text = request.form['text']
+    text = request.form['pause']
     processed_text = text.upper()
     print(processed_text)
     return pause(processed_text)
@@ -98,7 +99,7 @@ def pause(user):
     pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
     pause_response = requests.put(pause_endpoint, headers=auth_header)
     print(pause_response)
-    return redirect(url_for('home'))
+    return redirect(url_for('host'))
 
 @app.route('/play') #TODO: correct url? same q for pause method
 def play():
@@ -190,7 +191,8 @@ def test_message(message):
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
-    emit('my response', {'data': 'Connected'})
+    print(current_user.id)
+    emit('my response', {'data': current_user.id})
 
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():

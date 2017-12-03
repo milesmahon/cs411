@@ -30,10 +30,12 @@ $(document).ready(function(){
     <form id="disconnect" method="POST" action="#">
         <input type="submit" value="Disconnect">
     </form>
+
     <form method="POST">
-        <input name = "text">
+        <input type = "hidden" name = "pause" value = "{{ current_user.id }}" >
         <input type="submit" value="Pause">
     </form>
+
     <h2>Receive:</h2>
     <div id="log"></div>
 </body>
