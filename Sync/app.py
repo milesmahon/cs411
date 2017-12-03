@@ -86,6 +86,18 @@ def host():
 def guest():
     return render_template('guest.html', async_mode=socketio.async_mode)
 
+@app.route("/guest", methods = ['POST'])
+def guest_sesh_join():
+    text = request.form['sname']
+    processed_text = text.upper()
+    if SESSION_USERS[processed_text]:
+        SESSION_USERS[processed_text].append(current_user.id)
+        sessioninfo = SESSION_USERS[processed_text]
+    else:
+        sessioninfo = "Session does not exist"
+    return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
+
+
 @app.route("/host", methods = ['POST'])
 def host_sesh_create():
     text = request.form['sname']
