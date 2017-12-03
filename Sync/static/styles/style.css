@@ -11,12 +11,17 @@ h1 {
 
 a {
     text-decoration: none;
+    margin: 0px;
+    padding: 0px;
 }
 
 a:hover {
     text-decoration: none;
 }
 
+.container{
+    text-align:center;
+}
 .container-center{
 	width: 450px;
 	background-color: white;
@@ -25,6 +30,11 @@ a:hover {
 	text-align: center;
 	border-radius: 25px
 
+}
+
+.align-left {
+    margin: 3em;
+    text-align: left;
 }
 
 .container-left{
@@ -73,6 +83,12 @@ a.button{
 	background-color: #2E86C1;
 }
 
+/**********************************************************************************
+
+Player
+
+**********************************************************************************/
+
 .player {
     color: white;
     background-color: #3F3F3F;
@@ -94,12 +110,51 @@ a.button{
     font-size: 25px;
 }
 
+.play a:hover{
+    background-color: lightgray;
+}
+.play{
+    background-color: white;
+    margin: 5px;
+    padding-top: 3px;
+    padding-left: 22px;
+    padding-right: 15px;
+    padding-bottom: 2px;
+    border-radius: 50%;
+    display: inline-block;
+    font-size: 3em;
+}
+
+.pause{
+    background-color: white;
+    margin: 5px;
+    padding-right: 18px;
+    padding-left: 18px;
+    padding-bottom: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    font-size: 3em;
+    font-weight: bold;
+}
+
 /**********************************************************************************
 
 Log In
 
-**********************************************************************************
+**********************************************************************************/
+input {
+	text-align: center;
+	background-color: #ECF0F1;
+	border: 2px solid transparent;
+	border-radius: 3px;
+	font-size: 16px;
+	padding: 10px 0;
+	width: 250px;
+	transition: border .5s;
+}
 
+
+/*
 .login {
 	text-align: center;
 	margin: 100px auto;
@@ -108,7 +163,6 @@ Log In
 	padding: 20px;
 	border-radius: 25px
 }
-
 .control-group {
 	margin-bottom: 10px;
 }
@@ -161,7 +215,29 @@ a.btn {
 	margin-top: 12px;
 }
 
-**/
+*/
+
+/**********************************************************************************
+
+Loader
+
+***********************************************************************************/
+
+.loader {
+    display: inline-block;
+    margin: 2em;
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
 /**********************************************************************************
 
@@ -169,7 +245,9 @@ Side Navigation Menu
 
 ***********************************************************************************/
 .menu {
-	font-size: 5em;
+	font-size: 6em;
+    padding:0px;
+    margin:0px;
     color: #566573;
 	float: left;
 }
@@ -207,6 +285,9 @@ Side Navigation Menu
     color: white;
 }
 
+.sidenav a:active {
+    color: white;
+}
 /* Position and style the close button (top right corner) */
 .sidenav .closebtn {
     position: absolute;
@@ -215,6 +296,7 @@ Side Navigation Menu
     font-size: 36px;
     margin-left: 50px;
 }
+
 
 /* Style page content - use this if you want to push the page content to the right when you open the side navigation */
 #main {

@@ -93,7 +93,13 @@ def guest_home():
 
 @app.route('/host_home')
 def host_home():
-    return render_template('host_home.html')
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    print("access token = " + access_token)
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data =  json.loads(context_response.text)
+    return render_template('host_home.html', context_data=context_data)
 
 @app.route('/logout')
 def logout():
@@ -129,7 +135,7 @@ def pause(user):
     pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
     pause_response = requests.put(pause_endpoint, headers=auth_header)
     print(pause_response)
-    return redirect(url_for('host'))
+    return redirect(url_for('host_home'))
 
 @app.route('/play') #TODO: correct url? same q for pause method
 def play():
