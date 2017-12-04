@@ -292,7 +292,7 @@ Side Navigation Menu
     color: white;
 }
 
-.sidenav a:active {
+a.active {
     color: white;
 }
 /* Position and style the close button (top right corner) */

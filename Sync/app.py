@@ -90,6 +90,7 @@ def guest():
 @app.route("/guest", methods = ['POST'])
 def guest_sesh_join():
     text = request.form['sname']
+    sessioninfo = "null"
     processed_text = text.upper()
     if SESSION_USERS[processed_text]:
         SESSION_USERS[processed_text].append(current_user.id)
@@ -99,7 +100,7 @@ def guest_sesh_join():
     else:
         sessioninfo = "Session does not exist"
         print(sessioninfo)
-    return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
+        return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
     """
         return render_template('room.html',sessioninfo = sessioninfo, sesh = processed_text)
     else:
