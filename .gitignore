@@ -1,4 +1,6 @@
 .DS_STORE
-*.pyc
+.pyc
 Sync/config.py
-*.idea/*
+*/*.pyc
+.idea
+*/.idea

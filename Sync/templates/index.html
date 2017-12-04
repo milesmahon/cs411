@@ -16,18 +16,17 @@
 	<div class="container-center">
 		<div class="text-left">
 			<h1>Sync</h1>
-			<h2>Share your Spotify and Youtube audio with nearby friends</h2>
+			<h2>Share your Spotify audio with nearby friends</h2>
 		</div>
-		<br><br><br>
+		<br><br>
 		{% if current_user.is_authenticated %}
 		<h2>Hi, {{ current_user.name }}</h2>
         <br>
-        <a href="home" role="button">(home)</a>
+        <h2><a href="home" role="button">Home</a></h2>
 		{% else %}
-        <p><a href="{{ url_for('oauth_authorize', provider='facebook') }}">Login with Facebook</a></p>
-        <p><a href="{{ url_for('oauth_authorize', provider='spotify') }}">Login with Spotify</a></p>
+        <h2><a href="{{ url_for('oauth_authorize', provider='spotify') }}">Login with Spotify</a></h2>
 			{% endif %}
-			<br><br><br><br>
+		<br>
 	</div>
 
 

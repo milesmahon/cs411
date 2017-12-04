@@ -19,7 +19,8 @@
 	<div id="mySidenav" class="sidenav">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
 		<a href="{{ url_for('get_info') }}">Session Info</a>
-		<p><a href="{{ url_for('logout') }}">Logout</a></p>
+		<a href="{{ url_for('logout') }}">Logout</a>
+        <a href="{{ url_for('home') }}">Exit Session</a>
 	</div>
 
 	<!-- Menu bars -->
@@ -31,19 +32,21 @@
 		</div>
 
 		<div id="main">
-			<h1>Sync</h1>
-			<div class="container-button">
-                <div class="button_align">
-					<a href="{{ url_for('host') }}" class="button">Host a Sync Session</a>
+			<h1>Now Playing:</h1>
+            <div class="container-center">
+                <div class="player">
+                    <img src={{context_data['item']['album']['images'][1]['url']}} style="width=:{{context_data['item']['album']['images'][0]['width']}};height:{{context_data['item']['album']['images'][0]['width']}}">
+                    <h2>&quot;{{ context_data['item']['name'] }}&quot;</h2>
+                    <p><b>{{ context_data['item']['artists'][0]['name']}}</b>
+                    <br>{{ context_data['item']['album']['name']}}</p>
+                        <a href=" {{ url_for('play') }}" class="play">&#9658;</a>
+                        <a href=" {{ url_for('pause') }}" class="pause"><b>||</b></a>
                 </div>
-				<div class="button_align">
-					<a href="{{ url_for('guest') }}" class="button">Join a Sync Session</a>
-				</div>
-			</div>
-		</div>
+            </div>
+        </div>
 	</div>
 
 
 
 </body>
-
+</html>

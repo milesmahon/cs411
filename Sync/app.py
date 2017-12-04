@@ -1,13 +1,16 @@
 from flask import Flask, render_template, request, url_for, request, redirect, session, flash
+from threading import Lock
 from flask_sqlalchemy import SQLAlchemy
 from oauth import OAuthSignIn
 from flask_security import LoginForm, Security, SQLAlchemyUserDatastore, RoleMixin, login_required
 from flask_login import LoginManager, UserMixin, login_user, logout_user,\
     current_user
-from flask_socketio import SocketIO, send, emit
+from flask_socketio import SocketIO, send, emit, join_room, leave_room, \
+    close_room, rooms, disconnect
 import config
 import requests
 import json
+from collections import defaultdict
 
 async_mode = None
 
@@ -15,22 +18,26 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = config.SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQL_ROOT
 socketio = SocketIO(app, async_mode=async_mode)
+thread = None
+thread_lock = Lock()
 app.config['OAUTH_CREDENTIALS'] = {
 	'facebook':{
 	'id': config.FB_APP_ID,
 	'secret': config.FB_SECRET_KEY
 },
     'spotify':{
-        'id':config.SPOTIFY_APP_ID,
-        'secret':config.SPOTIFY_SECRET_KEY
+    	'id':config.SPOTIFY_APP_ID,
+    	'secret':config.SPOTIFY_SECRET_KEY
     }}
 
 #app.config['SECURITY_POST_LOGIN_VIEW'] = '/'
 
 db = SQLAlchemy(app)
-ACCESS_TOKEN = {}
+ACCESS_TOKEN =  {}
 REFRESH_TOKEN = None
 PROFILE_DATA = None
+hostl = []
+SESSION_USERS = defaultdict(list)
 
 # role model
 class Role(db.Model, RoleMixin):
@@ -50,9 +57,18 @@ class User(db.Model, UserMixin):
 	name = db.Column(db.String(50))
 
 
-
 security = Security(app, SQLAlchemyUserDatastore(db, User, Role))
 #Social(app, SQLAlchemyConnectionDatastore(db, Connection))
+
+def background_thread():
+    """Example of how to send server generated events to clients."""
+    count = 0
+    while True:
+        socketio.sleep(10)
+        count += 1
+        socketio.emit('my_response',
+                      {'data': 'Server generated event', 'count': count},
+                      namespace='/test')
 
 
 @app.route("/")
@@ -62,11 +78,68 @@ def index():
 
 @app.route("/host")
 def host():
+    hostl.append(current_user.id)
     return render_template('host.html', async_mode=socketio.async_mode)
+
+
+@app.route("/guest")
+def guest():
+    return render_template('guest.html', async_mode=socketio.async_mode)
+
+@app.route("/guest", methods = ['POST'])
+def guest_sesh_join():
+    text = request.form['sname']
+    processed_text = text.upper()
+    if SESSION_USERS[processed_text]:
+        SESSION_USERS[processed_text].append(current_user.id)
+        sessioninfo = SESSION_USERS[processed_text]
+    else:
+        sessioninfo = "Session does not exist"
+    return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
+
+
+@app.route("/host", methods = ['POST'])
+def host_sesh_create():
+    text = request.form['sname']
+    processed_text = text.upper()
+    SESSION_USERS[processed_text].append(current_user.id)
+    sessioninfo = SESSION_USERS[processed_text]
+    return render_template('host.html', sessioninfo = sessioninfo, sesh = processed_text)
+
 
 @app.route('/home')
 def home():
 	return render_template('home.html')
+
+@app.route('/room')
+def room():
+    hosts = hostl
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data =  json.loads(context_response.text)
+    return render_template('room.html', hosts = hosts, context_data = context_data)
+
+@app.route('/guest_home')
+def guest_home():
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    print("access token = " + access_token)
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data =  json.loads(context_response.text)
+    return render_template('guest_home.html', context_data=context_data)
+
+@app.route('/host_home')
+def host_home():
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    print("access token = " + access_token)
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data =  json.loads(context_response.text)
+    return render_template('host_home.html', context_data=context_data)
 
 @app.route('/logout')
 def logout():
@@ -76,21 +149,83 @@ def logout():
 @app.route('/info')
 def get_info():
     access_token = ACCESS_TOKEN[str(current_user.id)]
+    #print("access token = " + access_token)
+    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data =  json.loads(context_response.text)
+    print(context_data)
+    return render_template('info.html', context_data=context_data)
+
+"""
+@app.route('/guest')
+def get_info():
+    access_token = ACCESS_TOKEN[str(current_user.id)]
     print("access token = " + access_token)
     auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
     return render_template('info.html', context_data=context_data)
-
+"""
 @app.route('/pause')
-def pause():
-    access_token = ACCESS_TOKEN[str(current_user.id)]
+def pause(user):
+    access_token = ACCESS_TOKEN[str(user)]
     auth_header = {"Authorization": "Bearer {}".format(access_token)}
     pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
     pause_response = requests.put(pause_endpoint, headers=auth_header)
     print(pause_response)
+    return redirect(url_for('host_home'))
+
+@app.route('/play') #TODO: correct url? same q for pause method
+def play():
+    #dummy header for other play method
+
+    print(ACCESS_TOKEN)
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    # print("access token = " + access_token)
+    auth_header = {"Authorization": "Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    context_endpoint = "https://api.spotify.com/v1/me/player"
+    context_response = requests.get(context_endpoint, headers=auth_header)
+    context_data = json.loads(context_response.text)
+    print(json.dumps(context_data, indent=4, sort_keys=True))
+
+    return play(context_data)
+
+def play(song_info):
+    #takes json song info and plays selected song at correct time
+    #currently ASSUMES the user is not at the same point in song/same song as host
+
+    #/me/player endpoint gives us song_info json
+
+    #for /play endpoint
+    context_uri = song_info['item']['uri'] #get context uri of song
+
+    #for /seek endpoint
+    position_ms = song_info['progress_ms']
+
+    # hit /play endpoint
+    access_token = ACCESS_TOKEN[str(current_user.id)]
+    auth_header = {"Authorization": "Bearer {}".format(access_token)}
+    play_endpoint = "https://api.spotify.com/v1/me/player/play"
+    play_response = requests.put(play_endpoint, headers=auth_header, params={('context_uri', context_uri)})
+    print(ACCESS_TOKEN)
+    if play_response:
+        print(play_response.text)
+
+
+    #TODO:TESTING only! this next line
+    position_ms = 100000
+
+    # hit /seek endpoint
+    seek_endpoint = "https://api.spotify.com/v1/me/player/seek"
+    seek_response = requests.put(seek_endpoint, headers=auth_header, params={('position_ms', position_ms)})
+    print(ACCESS_TOKEN)
+    if seek_response:
+        print(seek_response.text)
     return redirect(url_for('home'))
+
+
 #@app.route('/showLogIn')
 #def showLogIn():
 #	return render_template('login.html')
@@ -122,22 +257,59 @@ def oauth_callback(provider):
     ACCESS_TOKEN[str(current_user.id)] = access_token
     return redirect(url_for('index'))
 
-@socketio.on('my event', namespace='/test')
-def test_message(message):
-    emit('my response', {'data': message['data']})
+@socketio.on('join', namespace='/test')
+def join(message):
+    join_room(message['room'])
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'In rooms: ' + ', '.join(rooms()),
+          'count': session['receive_count']})
 
-@socketio.on('my broadcast event', namespace='/test')
-def test_message(message):
-    emit('my response', {'data': message['data']}, broadcast=True)
+
+@socketio.on('leave', namespace='/test')
+def leave(message):
+    leave_room(message['room'])
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'In rooms: ' + ', '.join(rooms()),
+          'count': session['receive_count']})
+
+
+@socketio.on('close_room', namespace='/test')
+def close(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response', {'data': 'Room ' + message['room'] + ' is closing.',
+                         'count': session['receive_count']},
+         room=message['room'])
+    close_room(message['room'])
+
+
+@socketio.on('my_room_event', namespace='/test')
+def send_room_message(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': message['data'], 'count': session['receive_count']},
+         room=message['room'])
+
+
+@socketio.on('disconnect_request', namespace='/test')
+def disconnect_request():
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'Disconnected!', 'count': session['receive_count']})
+    disconnect()
+
+
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
-    emit('my response', {'data': 'Connected'})
-
-@socketio.on('disconnect', namespace='/test')
-def test_disconnect():
-    print('Client disconnected')
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(target=background_thread)
+    emit('my_response', {'data': 'Connected', 'count': 0})
 
 
 if __name__ == "__main__":
+    #db.create_all()
 	socketio.run(app, debug=True)

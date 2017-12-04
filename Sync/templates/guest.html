@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-	<title>Sync | Home</title>
+	<title>Sync | Guest</title>
 
 	<!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
@@ -31,19 +31,21 @@
 		</div>
 
 		<div id="main">
-			<h1>Sync</h1>
-			<div class="container-button">
-                <div class="button_align">
-					<a href="{{ url_for('host') }}" class="button">Host a Sync Session</a>
-                </div>
-				<div class="button_align">
-					<a href="{{ url_for('guest') }}" class="button">Join a Sync Session</a>
-				</div>
-			</div>
+			<h1>Join A Session</h1>
+            <br>
+			<h2>Enter a Session ID to join the session</h2>
+            <br>
+            <form method="POST">
+                <input type = "text" name = "sname" > <br> <br>
+                <input type="submit" value="Session Name">
+            </form>
+            <br>
+            <h2><a href="room" role="button">Join</a></h2>
+            <br><br><br>
 		</div>
 	</div>
 
 
 
 </body>
-
+</html>

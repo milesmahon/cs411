@@ -1,8 +1,64 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Host</title>
+    <title>Sync | Host</title>
+        
+        <!--Bootstrap CSS--> 
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+
+        <!--CSS--> 
+        <link rel= "stylesheet" type= "text/css" href= "../static/styles/style.css">
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
+        <script type="text/javascript" src="../static/js/script.js"></script>
+
+</head>
+    
+<body>
+
+	<div id="mySidenav" class="sidenav">
+		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+		<a href="{{ url_for('get_info') }}">Session Info</a>
+		<p><a href="{{ url_for('logout') }}">Logout</a></p>
+	</div>
+
+	<!-- Menu bars -->
+	<div class="container-left">
+		<div class="menu">
+			<a href="#">
+			<span onclick="openNav()">&equiv;</span>
+			</a>
+		</div>
+
+		<div id="main">
+			<h1>Host A Session</h1>
+            <br>
+			<h2>Enter a Session ID to create the session</h2>
+            <br>
+            <form method="POST">
+                <input type = "text" name = "sname" > <br> <br>
+                <input type="submit" value="Session Name">
+            </form>
+            <br>
+            {% if sesh %}
+            {{ sesh }}:
+            {{ sessioninfo[0].id }}
+            {% endif %}
+            <br>
+            
+            <br><br><br>
+            
+            <p>(After host inputs session id, this will appear to check to see who joins session:)</p>
+            <h2>Waiting for guests to join session</h2>
+            <div class="loader"></div>
+            <h2><a href="room" role="button">Begin Session</a></h2>
+		</div>
+	</div>
+
+</body>
+</html>
+<!--
     	<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
 	<script type="text/javascript" charset="utf-8">
@@ -23,18 +79,21 @@ $(document).ready(function(){
 		</script>
 </head>
 <body>
-    <form id="emit" method="POST" action='#'>
-        <input type="text" name="emit_data" id="emit_data" placeholder="Message">
-        <input type="submit" value="Echo">
-    </form>
     <form id="broadcast" method="POST" action='#'>
         <input type="text" name="broadcast_data" id="broadcast_data" placeholder="Message">
-        <input type="submit" value="Broadcast">
+        <input name = "text" type="submit" value="Broadcast">
     </form>
     <form id="disconnect" method="POST" action="#">
         <input type="submit" value="Disconnect">
     </form>
+
+    <form method="POST">
+        <input type = "hidden" name = "pause" value = "{{ current_user.id }}" >
+        <input type="submit" value="Pause">
+    </form>
+
     <h2>Receive:</h2>
     <div id="log"></div>
 </body>
 </html>
+-->
