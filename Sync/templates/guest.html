@@ -31,10 +31,14 @@
 		</div>
 
 		<div id="main">
+
 			<h1>Join A Session</h1>
             <br>
 			<h2>Enter a Session ID to join the session</h2>
             <br>
+            {% if sessioninfo %}
+                <h3>{{ sessioninfo }}</h3>
+            {% endif %}
             <form method="POST">
                 <input type = "text" name = "sname" > <br> <br>
                 <input type="submit" value="Session Name">

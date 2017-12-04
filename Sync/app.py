@@ -70,9 +70,10 @@ def background_thread():
                       {'data': 'Server generated event', 'count': count},
                       namespace='/test')
 
-
 @app.route("/")
 def index():
+    if current_user.is_anonymous or not str(current_user.id) in ACCESS_TOKEN:
+        return redirect(url_for('oauth_authorize', provider='spotify'))
     return render_template('index.html')
 
 
@@ -93,8 +94,10 @@ def guest_sesh_join():
     if SESSION_USERS[processed_text]:
         SESSION_USERS[processed_text].append(current_user.id)
         sessioninfo = SESSION_USERS[processed_text]
+        print("Success")
     else:
         sessioninfo = "Session does not exist"
+        print(sessioninfo)
     return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
 
 
@@ -115,7 +118,7 @@ def home():
 def room():
     hosts = hostl
     access_token = ACCESS_TOKEN[str(current_user.id)]
-    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    auth_header = {"Authorization":"Bearer {}".format(access_token)}
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
@@ -125,10 +128,11 @@ def room():
 def guest_home():
     access_token = ACCESS_TOKEN[str(current_user.id)]
     print("access token = " + access_token)
-    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    auth_header = {"Authorization":"Bearer {}".format(access_token)}
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
-    context_data =  json.loads(context_response.text)
+    if context_response:
+        context_data =  json.loads(context_response.text)
     return render_template('guest_home.html', context_data=context_data)
 
 @app.route('/host_home')
@@ -138,7 +142,8 @@ def host_home():
     auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
-    context_data =  json.loads(context_response.text)
+    if context_response:
+        context_data = context_response.json()
     return render_template('host_home.html', context_data=context_data)
 
 @app.route('/logout')
@@ -149,11 +154,13 @@ def logout():
 @app.route('/info')
 def get_info():
     access_token = ACCESS_TOKEN[str(current_user.id)]
-    #print("access token = " + access_token)
-    auth_header = {"Authorization":"Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    print(access_token)
+    auth_header = {"Authorization":"Bearer {}".format(access_token)}
+    print(auth_header)
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
-    context_data =  json.loads(context_response.text)
+    print(context_response.json())
+    context_data = context_response.json()
     print(context_data)
     return render_template('info.html', context_data=context_data)
 
@@ -184,10 +191,10 @@ def play():
     print(ACCESS_TOKEN)
     access_token = ACCESS_TOKEN[str(current_user.id)]
     # print("access token = " + access_token)
-    auth_header = {"Authorization": "Bearer {}".format(ACCESS_TOKEN[str(current_user.id)])}
+    auth_header = {"Authorization": "Bearer {}".format(access_token)}
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
-    context_data = json.loads(context_response.text)
+    context_data = context_response.json()
     print(json.dumps(context_data, indent=4, sort_keys=True))
 
     return play(context_data)
@@ -223,7 +230,8 @@ def play(song_info):
     print(ACCESS_TOKEN)
     if seek_response:
         print(seek_response.text)
-    return redirect(url_for('home'))
+    return redirect(url_for('room'))
+    # return redirect(url_for('home'))
 
 
 #@app.route('/showLogIn')
@@ -232,15 +240,16 @@ def play(song_info):
 
 @app.route('/authorize/<provider>')
 def oauth_authorize(provider):
-    if not current_user.is_anonymous:
-        return redirect(url_for('index'))
+    # if not current_user.is_anonymous:
+    #     return redirect(url_for('index'))
     oauth = OAuthSignIn.get_provider(provider)
     return oauth.authorize()
 
 @app.route('/callback/<provider>')
 def oauth_callback(provider):
     if not current_user.is_anonymous:
-        return redirect(url_for('index'))
+        logout_user()
+        print("logout success")
     oauth = OAuthSignIn.get_provider(provider)
     access_token, social_id, username, email = oauth.callback()
     #PROFILE_DATA = profile_data
@@ -253,7 +262,7 @@ def oauth_callback(provider):
         db.session.add(user)
         db.session.commit()
     login_user(user, True)
-    global ACCESS_TOKEN
+    # global ACCESS_TOKEN
     ACCESS_TOKEN[str(current_user.id)] = access_token
     return redirect(url_for('index'))
 
