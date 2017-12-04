@@ -34,66 +34,24 @@
 		<div id="main">
 			<h1>Host A Session</h1>
             <br>
-			<h2>Enter a Session ID to create the session</h2>
+            <h2>Enter a Session ID to create the session</h2>
             <br>
             <form method="POST">
-                <input type = "text" name = "sname" > <br> <br>
-                <input type="submit" value="Session Name">
+                <input type="text" name="sname" value="" placeholder="Enter Session ID">
+                <br>
+                <input class="submit" type="submit" value="Submit">
             </form>
             <br>
+            
             {% if sesh %}
-            {{ sesh }}:
-            {{ sessioninfo[0].id }}
-            {% endif %}
-            <br>
-            
-            <br><br><br>
-            
-            <p>(After host inputs session id, this will appear to check to see who joins session:)</p>
-            <h2>Waiting for guests to join session</h2>
+           <!-- {{ sesh }}:
+            {{ sessioninfo[0].id }} -->
+            <h2>Waiting for guests to join session: {{ sesh }}</h2>
             <div class="loader"></div>
             <h2><a href="room" role="button">Begin Session</a></h2>
-		</div>
+            {% endif %}
+        </div>
 	</div>
 
 </body>
 </html>
-<!--
-    	<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
-	<script type="text/javascript" charset="utf-8">
-$(document).ready(function(){
-    var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
-    socket.on('my response', function(msg) {
-        $('#log').append('<p>Received: ' + msg.data + '</p>');
-    });
-    $('form#emit').submit(function(event) {
-        socket.emit('my event', {data: $('#emit_data').val()});
-        return false;
-    });
-    $('form#broadcast').submit(function(event) {
-        socket.emit('my broadcast event', {data: $('#broadcast_data').val()});
-        return false;
-    });
-});
-		</script>
-</head>
-<body>
-    <form id="broadcast" method="POST" action='#'>
-        <input type="text" name="broadcast_data" id="broadcast_data" placeholder="Message">
-        <input name = "text" type="submit" value="Broadcast">
-    </form>
-    <form id="disconnect" method="POST" action="#">
-        <input type="submit" value="Disconnect">
-    </form>
-
-    <form method="POST">
-        <input type = "hidden" name = "pause" value = "{{ current_user.id }}" >
-        <input type="submit" value="Pause">
-    </form>
-
-    <h2>Receive:</h2>
-    <div id="log"></div>
-</body>
-</html>
--->

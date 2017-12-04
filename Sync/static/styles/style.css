@@ -10,6 +10,7 @@ h1 {
 }
 
 a {
+    color: #3498DB;
     text-decoration: none;
     margin: 0px;
     padding: 0px;
@@ -153,6 +154,12 @@ input {
 	transition: border .5s;
 }
 
+input.submit{
+    background:none;
+    border:none;
+    font-size: 2em; 
+	color: #3498DB;
+}
 
 /*
 .login {

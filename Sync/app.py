@@ -95,10 +95,17 @@ def guest_sesh_join():
         SESSION_USERS[processed_text].append(current_user.id)
         sessioninfo = SESSION_USERS[processed_text]
         print("Success")
+        return render_template('room.html',sessioninfo = sessioninfo, sesh = processed_text)
     else:
         sessioninfo = "Session does not exist"
         print(sessioninfo)
     return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
+    """
+        return render_template('room.html',sessioninfo = sessioninfo, sesh = processed_text)
+    else:
+        sessioninfo = "Session does not exist"
+        return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
+    """
 
 
 @app.route("/host", methods = ['POST'])
@@ -106,6 +113,7 @@ def host_sesh_create():
     text = request.form['sname']
     processed_text = text.upper()
     SESSION_USERS[processed_text].append(current_user.id)
+    hostl.append(current_user.id)
     sessioninfo = SESSION_USERS[processed_text]
     return render_template('host.html', sessioninfo = sessioninfo, sesh = processed_text)
 
@@ -122,7 +130,7 @@ def room():
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
-    return render_template('room.html', hosts = hosts, context_data = context_data)
+    return render_template('room.html', hosts=hosts, context_data=context_data)
 
 @app.route('/guest_home')
 def guest_home():
