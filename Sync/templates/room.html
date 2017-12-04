@@ -14,22 +14,47 @@
 
 </head>
 <body>
-    {% if current_user.id in hosts %}
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="{{ url_for('get_info') }}">Session Info</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% if current_user.id in hosts %}
+        <a href="{{ url_for('home') }}">End Session</a>
+        {% else %}
+        <a href="{{ url_for('home') }}">Exit Session</a>
+        {% endif %}
+	</div>
+
+	<!-- Menu bars -->
+	<div class="container-left">
+		<div class="menu">
+			<a href="#">
+			<span onclick="openNav()">&equiv;</span>
+			</a>
+		</div>
     <div id="main">
-			<h1>Now Playing:</h1>
-            <div class="container-center">
-                <div class="player">
-                    <img src={{context_data['item']['album']['images'][1]['url']}} style="width=:{{context_data['item']['album']['images'][0]['width']}};height:{{context_data['item']['album']['images'][0]['width']}}">
-                    <h2>&quot;{{ context_data['item']['name'] }}&quot;</h2>
-                    <p><b>{{ context_data['item']['artists'][0]['name']}}</b>
-                    <br>{{ context_data['item']['album']['name']}}</p>
-                        <a href=" {{ url_for('play') }}" class="play">&#9658;</a>
-                        <a href=" {{ url_for('pause') }}" class="pause"><b>||</b></a>
-                </div>
+        <h1>Now Playing:</h1>
+        <div class="container-center">
+            {% if current_user.id in hosts %}
+            <div class="player">
+                <img src={{context_data['item']['album']['images'][1]['url']}} style="width=:{{context_data['item']['album']['images'][0]['width']}};height:{{context_data['item']['album']['images'][0]['width']}}">
+                <h2>&quot;{{ context_data['item']['name'] }}&quot;</h2>
+                <p><b>{{ context_data['item']['artists'][0]['name']}}</b>
+                <br>{{ context_data['item']['album']['name']}}</p>
+                    <a href=" {{ url_for('play') }}" class="play">&#9658;</a>
+                    <a href=" {{ url_for('pause') }}" class="pause"><b>||</b></a>
             </div>
+            {% else %}
+            <div class="player">
+                <img src={{context_data['item']['album']['images'][1]['url']}} style="width=:{{context_data['item']['album']['images'][0]['width']}};height:{{context_data['item']['album']['images'][0]['width']}}">
+                <h2>&quot;{{ context_data['item']['name'] }}&quot;</h2>
+                <p><b>{{ context_data['item']['artists'][0]['name']}}</b>
+                <br>{{ context_data['item']['album']['name']}}</p>
+                <!--<a href=" {{ url_for('pause') }}">Pause</a>-->
+            </div>
+            {% endif %}
         </div>
-    {% else %}
-        not a host
-    {% endif %}
+    </div>
+    </div>
 </body>
 </html>

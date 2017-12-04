@@ -38,6 +38,7 @@ Time in ms:
 	<div id="mySidenav" class="sidenav">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
 		<a href="{{ url_for('get_info') }}" class="active">Session Info</a>
+        <a href="{{ url_for('home') }}" class="active">Home</a>
 		<p><a href="{{ url_for('logout') }}">Logout</a></p>
 	</div>
 
@@ -50,6 +51,7 @@ Time in ms:
 		</div>
 
 		<div id="main">
+
             <div class="container">
                 <h1>Session Info</h1>
                 <div class="align-left">
@@ -58,6 +60,7 @@ Time in ms:
                     <h2>Guests in Session:</h2>
                 </div>
             </div>
+
 		</div>
 	</div>
 
