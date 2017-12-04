@@ -107,13 +107,6 @@ def guest_sesh_join():
         sessioninfo = "Session does not exist"
         print(sessioninfo)
         return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
-    """
-        return render_template('room.html',sessioninfo = sessioninfo, sesh = processed_text)
-    else:
-        sessioninfo = "Session does not exist"
-        return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
-    """
-
 
 @app.route("/host", methods = ['POST'])
 def host_sesh_create():
@@ -281,6 +274,7 @@ def oauth_callback(provider):
     ACCESS_TOKEN[str(current_user.id)] = access_token
     return redirect(url_for('index'))
 
+"""
 @socketio.on('join', namespace='/test')
 def join(message):
     join_room(message['room'])
@@ -332,7 +326,7 @@ def test_connect():
         if thread is None:
             thread = socketio.start_background_task(target=background_thread)
     emit('my_response', {'data': 'Connected', 'count': 0})
-
+"""
 
 if __name__ == "__main__":
     #db.create_all()
