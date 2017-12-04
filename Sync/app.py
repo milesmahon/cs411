@@ -92,10 +92,16 @@ def guest_sesh_join():
     text = request.form['sname']
     processed_text = text.upper()
     if SESSION_USERS[processed_text]:
+        hosts = hostl
+        access_token = ACCESS_TOKEN[str(current_user.id)]
+        auth_header = {"Authorization": "Bearer {}".format(access_token)}
+        context_endpoint = "https://api.spotify.com/v1/me/player"
+        context_response = requests.get(context_endpoint, headers=auth_header)
+        context_data = json.loads(context_response.text)
         SESSION_USERS[processed_text].append(current_user.id)
         sessioninfo = SESSION_USERS[processed_text]
         print("Success")
-        return render_template('room.html',sessioninfo = sessioninfo, sesh = processed_text)
+        return render_template('room.html',sessioninfo = sessioninfo, sesh = processed_text, context_data = context_data, hosts = hosts)
     else:
         sessioninfo = "Session does not exist"
         print(sessioninfo)
