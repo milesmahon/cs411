@@ -155,9 +155,6 @@ def host_home():
     return render_template('host_home.html', context_data=context_data)
 <<<<<<< HEAD
 """
-=======
-    """
->>>>>>> 3b2cce28a1034bb0e91e03e052c90014ea76dd7d
 
 @app.route('/logout')
 def logout():
