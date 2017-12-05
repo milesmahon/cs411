@@ -103,7 +103,7 @@ def guest_sesh_join():
 
 @app.route("/host")
 def host():
-    hostl.append(current_user.id)
+    #hostl.append(current_user.id)
     return render_template('host.html', async_mode=socketio.async_mode)
 
 @app.route("/host", methods = ['POST'])
@@ -191,13 +191,13 @@ def get_info(sessionname):
     in_session = ""
     session_id = ""
     host = ""
-    for key, values in SESSION_USERS.iteritems():
-        if current_user.name in values:
-            users = values
+    for key in SESSION_USERS.keys():
+        if sessionname == key:
             session_id = key
-            for x in users:
-                if x in hostl:
-                    host = x
+            for x in SESSION_USERS[key]:
+                print hostl
+                if x[0] in hostl:
+                    host = x[0]
                 else:
                     in_session += ("\n" + x[0])
 
