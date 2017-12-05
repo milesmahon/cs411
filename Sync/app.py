@@ -80,7 +80,9 @@ def index():
         return redirect(url_for('oauth_authorize', provider='spotify'))
     return render_template('index.html')
 
-
+@app.route('/home')
+def home():
+    return render_template('home.html')
 
 @app.route("/guest")
 def guest():
@@ -91,13 +93,14 @@ def guest_sesh_join():
     text = request.form['sname']
     processed_text = text.upper()
     if SESSION_USERS[processed_text]:
-        SESSION_USERS[processed_text].append(current_user.id)
+        SESSION_USERS[processed_text].append(current_user.name)
+        sessioninfo = SESSION_USERS[processed_text]
+        print("Success")
         return redirect(url_for('room', sessionname = processed_text))
     else:
         sessioninfo = "Session does not exist"
         print(sessioninfo)
         return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
-
 
 @app.route("/host")
 def host():
@@ -108,19 +111,19 @@ def host():
 def host_sesh_create():
         text = request.form['sname']
         processed_text = text.upper()
-        SESSION_USERS[processed_text].append(current_user.id)
-        hostl.append(current_user.id)
+        SESSION_USERS[processed_text].append(current_user.name)
+        hostl.append(current_user.name)
         sessioninfo = SESSION_USERS[processed_text]
         return redirect(url_for('loading', sessionname = processed_text))
 
 @app.route('/loading/<sessionname>')
 def loading(sessionname):
-	return render_template('loading.html', sessionname = sessionname)
-
-
-@app.route('/home')
-def home():
-	return render_template('home.html')
+    in_session = ""
+    users = SESSION_USERS.get(sessionname)
+    for x in users:
+        #if x not in hostl:
+        in_session += ("\n" + x)
+	return render_template('loading.html', sessionname=sessionname, in_session=in_session)
 
 @app.route('/room/<sessionname>')
 def room(sessionname):
@@ -131,6 +134,7 @@ def room(sessionname):
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
     return render_template('room.html', hosts=hosts, context_data=context_data, sessionname = sessionname)
+
 """
 @app.route('/guest_home')
 def guest_home():
@@ -153,15 +157,51 @@ def host_home():
     if context_response:
         context_data = context_response.json()
     return render_template('host_home.html', context_data=context_data)
-    """
+<<<<<<< HEAD
+"""
 
 @app.route('/logout')
 def logout():
     logout_user()
     return render_template(url_for('home'))
 
-@app.route('/info')
-def get_info():
+@app.route('/exit')
+def exit():
+    print("CURRENT DICT = ", SESSION_USERS)
+    for key, values in SESSION_USERS.iteritems():
+        if current_user.name in values:
+            new_val = values.remove(current_user.name)
+            SESSION_USERS[key] = new_val
+    print("NEW DICT = ", SESSION_USERS)
+    return render_template('home.html')
+
+@app.route('/end')
+def end():
+    print("CURRENT DICT = ", SESSION_USERS)
+    for key, values in SESSION_USERS.iteritems():
+        if current_user.name in values:
+            del SESSION_USERS[key]
+            hostl.remove(current_user.name)
+            break
+    print("NEW DICT = ", SESSION_USERS)
+    return render_template('home.html')
+
+@app.route('/info/<sessionname>')
+def get_info(sessionname):
+    print("MY_PRINT:", SESSION_USERS)
+    in_session = ""
+    session_id = ""
+    host = ""
+    for key, values in SESSION_USERS.iteritems():
+        if current_user.name in values:
+            users = values
+            session_id = key
+            for x in users:
+                if x in hostl:
+                    host = x
+                else:
+                    in_session += ("\n" + x)
+
     access_token = ACCESS_TOKEN[str(current_user.id)]
     print(access_token)
     auth_header = {"Authorization":"Bearer {}".format(access_token)}
@@ -171,7 +211,7 @@ def get_info():
     print(context_response.json())
     context_data = context_response.json()
     print(context_data)
-    return render_template('info.html', context_data=context_data)
+    return render_template('info.html', session_id=session_id, in_session=in_session, host=host, context_data=context_data, sessionname=sessionname)
 
 """
 @app.route('/guest')
@@ -287,6 +327,60 @@ def oauth_callback(provider):
     ACCESS_TOKEN[str(current_user.id)] = access_token
     return redirect(url_for('index'))
 
+
+"""
+@socketio.on('join', namespace='/test')
+def join(message):
+    join_room(message['room'])
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'In rooms: ' + ', '.join(rooms()),
+          'count': session['receive_count']})
+
+
+@socketio.on('leave', namespace='/test')
+def leave(message):
+    leave_room(message['room'])
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'In rooms: ' + ', '.join(rooms()),
+          'count': session['receive_count']})
+
+
+@socketio.on('close_room', namespace='/test')
+def close(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response', {'data': 'Room ' + message['room'] + ' is closing.',
+                         'count': session['receive_count']},
+         room=message['room'])
+    close_room(message['room'])
+
+
+@socketio.on('my_room_event', namespace='/test')
+def send_room_message(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': message['data'], 'count': session['receive_count']},
+         room=message['room'])
+
+
+@socketio.on('disconnect_request', namespace='/test')
+def disconnect_request():
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'Disconnected!', 'count': session['receive_count']})
+    disconnect()
+
+
+
+@socketio.on('connect', namespace='/test')
+def test_connect():
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(target=background_thread)
+    emit('my_response', {'data': 'Connected', 'count': 0})
+"""
 
 if __name__ == "__main__":
     #db.create_all()

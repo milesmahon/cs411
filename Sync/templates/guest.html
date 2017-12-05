@@ -15,11 +15,10 @@
 </head>
 
 <body>
-
-	<div id="mySidenav" class="sidenav">
+<div id="mySidenav" class="sidenav">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-		<a href="{{ url_for('get_info') }}">Session Info</a>
-		<p><a href="{{ url_for('logout') }}">Logout</a></p>
+        <a href="{{ url_for('home') }}">Home</a>
+		<a href="{{ url_for('logout') }}">Logout</a>
 	</div>
 
 	<!-- Menu bars -->
@@ -37,17 +36,14 @@
 			<h2>Enter a Session ID to join the session</h2>
             <br>
             {% if sessioninfo %}
-                <h3 style="color:red;">{{  sessioninfo }}</h3>
+                <h3 style="color:red;">{{ sessioninfo }}</h3>
             {% endif %}
             <form method="POST">
-                <input type="text" name="sname" value="" placeholder="Enter Session ID"> <br> 
+                <input type = "text" name = "sname" value="" placeholder="Enter Session ID"> <br>
                 <input class="submit" type="submit" value="Join">
             </form>
-            <br><br>
+            <br><br><br>
 		</div>
 	</div>
-
-
-
 </body>
 </html>

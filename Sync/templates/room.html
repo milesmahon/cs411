@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sync | Host</title>
+    <title>Sync | Session</title>
 
         <!--Bootstrap CSS-->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
@@ -16,12 +16,12 @@
 <body>
     <div id="mySidenav" class="sidenav">
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <a href="{{ url_for('get_info') }}">Session Info</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
-        {% if current_user.id in hosts %}
-        <a href="{{ url_for('home') }}">End Session</a>
+        <a href="#" class="active">Home</a>
+        <a href="{{ url_for('get_info', sessionname=sessionname) }}">Session Info</a>
+        {% if current_user.name in hosts %}
+        <a href="{{ url_for('end') }}">End Session</a>
         {% else %}
-        <a href="{{ url_for('home') }}">Exit Session</a>
+        <a href="{{ url_for('exit') }}">Exit Session</a>
         {% endif %}
 	</div>
 
@@ -35,7 +35,7 @@
     <div id="main">
         <h1>Now Playing:</h1>
         <div class="container-center">
-            {% if current_user.id in hosts %}
+            {% if current_user.name in hosts %}
             <div class="player">
                 <img src={{context_data['item']['album']['images'][1]['url']}} style="width=:{{context_data['item']['album']['images'][0]['width']}};height:{{context_data['item']['album']['images'][0]['width']}}">
                 <h2>&quot;{{ context_data['item']['name'] }}&quot;</h2>
