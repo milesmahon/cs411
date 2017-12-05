@@ -37,9 +37,13 @@ Time in ms:
 
 	<div id="mySidenav" class="sidenav">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('room', sessionname=sessionname) }}">Home</a>
 		<a href="#" class="active">Session Info</a>
-		<p><a href="{{ url_for('logout') }}">Logout</a></p>
+        {% if current_user.name in hosts %}
+        <a href="{{ url_for('end') }}">End Session</a>
+        {% else %}
+        <a href="{{ url_for('exit') }}">Exit Session</a>
+        {% endif %}
 	</div>
 
 	<!-- Menu bars -->
@@ -55,9 +59,9 @@ Time in ms:
             <div class="container">
                 <h1>Session Info</h1>
                 <div class="align-left">
-                    <h2>Session ID:</h2>{{ session_id }}<br>
-                    <h2>Session Host:</h2>{{ host }}<br>
-                    <h2>Guests in Session:{{ in_session }}</h2>
+                    <h2>Session ID:</h2><div class="info">{{ session_id }}</div><br>
+                    <h2>Session Host:</h2><div class="info">{{ host }}</div><br>
+                    <h2>Guests in Session:</h2><div class="info">{{ in_session }}</div><br>
                 </div>
             </div>
 

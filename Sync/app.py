@@ -78,7 +78,9 @@ def index():
         return redirect(url_for('oauth_authorize', provider='spotify'))
     return render_template('index.html')
 
-
+@app.route('/home')
+def home():
+    return render_template('home.html')
 
 @app.route("/guest")
 def guest():
@@ -89,7 +91,7 @@ def guest_sesh_join():
     text = request.form['sname']
     processed_text = text.upper()
     if SESSION_USERS[processed_text]:
-        SESSION_USERS[processed_text].append(current_user.id)
+        SESSION_USERS[processed_text].append(current_user.name)
         sessioninfo = SESSION_USERS[processed_text]
         print("Success")
         return redirect(url_for('room', sessionname = processed_text))
@@ -107,19 +109,19 @@ def host():
 def host_sesh_create():
         text = request.form['sname']
         processed_text = text.upper()
-        SESSION_USERS[processed_text].append(current_user.id)
-        hostl.append(current_user.id)
+        SESSION_USERS[processed_text].append(current_user.name)
+        hostl.append(current_user.name)
         sessioninfo = SESSION_USERS[processed_text]
         return redirect(url_for('loading', sessionname = processed_text))
 
 @app.route('/loading/<sessionname>')
 def loading(sessionname):
-	return render_template('loading.html', sessionname = sessionname)
-
-
-@app.route('/home')
-def home():
-	return render_template('home.html')
+    in_session = ""
+    users = SESSION_USERS.get(sessionname)
+    for x in users:
+        #if x not in hostl:
+        in_session += ("\n" + x)
+	return render_template('loading.html', sessionname=sessionname, in_session=in_session)
 
 @app.route('/room/<sessionname>')
 def room(sessionname):
@@ -161,18 +163,42 @@ def logout():
     logout_user()
     return render_template(url_for('home'))
 
-@app.route('/info')
-def get_info():
-    in_session = "null"
-    session_id = "null"
-    host = "null"
-    for key, users in SESSION_USERS.iteritems():
-        if current_user.id in users:
-            in_session = users
+@app.route('/exit')
+def exit():
+    print("CURRENT DICT = ", SESSION_USERS)
+    for key, values in SESSION_USERS.iteritems():
+        if current_user.name in values:
+            new_val = values.remove(current_user.name)
+            SESSION_USERS[key] = new_val
+    print("NEW DICT = ", SESSION_USERS)
+    return render_template('home.html')
+
+@app.route('/end')
+def end():
+    print("CURRENT DICT = ", SESSION_USERS)
+    for key, values in SESSION_USERS.iteritems():
+        if current_user.name in values:
+            del SESSION_USERS[key]
+            hostl.remove(current_user.name)
+            break
+    print("NEW DICT = ", SESSION_USERS)
+    return render_template('home.html')
+
+@app.route('/info/<sessionname>')
+def get_info(sessionname):
+    print("MY_PRINT:", SESSION_USERS)
+    in_session = ""
+    session_id = ""
+    host = ""
+    for key, values in SESSION_USERS.iteritems():
+        if current_user.name in values:
+            users = values
             session_id = key
             for x in users:
                 if x in hostl:
                     host = x
+                else:
+                    in_session += ("\n" + x)
 
     access_token = ACCESS_TOKEN[str(current_user.id)]
     print(access_token)
@@ -183,7 +209,7 @@ def get_info():
     print(context_response.json())
     context_data = context_response.json()
     print(context_data)
-    return render_template('info.html', session_id=session_id, in_session=in_session, host=host,context_data=context_data)
+    return render_template('info.html', session_id=session_id, in_session=in_session, host=host, context_data=context_data, sessionname=sessionname)
 
 """
 @app.route('/guest')
