@@ -92,7 +92,6 @@ def guest():
 @app.route("/guest", methods = ['POST'])
 def guest_sesh_join():
     text = request.form['sname']
-    sessioninfo = "null"
     processed_text = text.upper()
     if SESSION_USERS[processed_text]:
         hosts = hostl
@@ -104,8 +103,6 @@ def guest_sesh_join():
         SESSION_USERS[processed_text].append(current_user.id)
         sessioninfo = SESSION_USERS[processed_text]
         print("Success")
-
-
         return render_template('room.html',sessioninfo = sessioninfo, sesh = processed_text, context_data = context_data, hosts = hosts)
 
     else:
@@ -140,6 +137,7 @@ def room():
     context_data =  json.loads(context_response.text)
     return render_template('room.html', hosts=hosts, context_data=context_data)
 
+"""
 @app.route('/guest_home')
 def guest_home():
     access_token = ACCESS_TOKEN[str(current_user.id)]
@@ -161,6 +159,7 @@ def host_home():
     if context_response:
         context_data = context_response.json()
     return render_template('host_home.html', context_data=context_data)
+"""
 
 @app.route('/logout')
 def logout():
@@ -169,6 +168,17 @@ def logout():
 
 @app.route('/info')
 def get_info():
+    in_session = "null"
+    session_id = "null"
+    host = "null"
+    for key, users in SESSION_USERS.iteritems():
+        if current_user.id in users:
+            in_session = users
+            session_id = key
+            for x in users:
+                if x in hostl:
+                    host = x
+
     access_token = ACCESS_TOKEN[str(current_user.id)]
     print(access_token)
     auth_header = {"Authorization":"Bearer {}".format(access_token)}
@@ -178,7 +188,7 @@ def get_info():
     print(context_response.json())
     context_data = context_response.json()
     print(context_data)
-    return render_template('info.html', context_data=context_data)
+    return render_template('info.html', session_id=session_id, in_session=in_session, host=host,context_data=context_data)
 
 """
 @app.route('/guest')

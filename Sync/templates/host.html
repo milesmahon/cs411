@@ -37,13 +37,6 @@
 		<div id="main">
 			<h1>Host A Session</h1>
             <br>
-            {% if sesh %}
-           <!-- {{ sesh }}:
-            {{ sessioninfo[0].id }} -->
-            <h2>Waiting for guests to join session: {{ sesh }}</h2>
-            <div class="loader"></div>
-            <h2><a href="room" role="button">Begin Session</a></h2>
-            {% else %}
             <h2>Enter a Session ID to create the session</h2>
             <br>
             <form method="POST">
@@ -52,7 +45,6 @@
                 <input class="submit" type="submit" value="Submit">
             </form>
             <br>
-            {% endif %}
         </div>
 	</div>
 

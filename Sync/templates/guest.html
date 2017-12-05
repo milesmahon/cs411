@@ -15,8 +15,7 @@
 </head>
 
 <body>
-
-	<div id="mySidenav" class="sidenav">
+<div id="mySidenav" class="sidenav">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
         <a href="{{ url_for('home') }}">Home</a>
 		<a href="{{ url_for('get_info') }}">Session Info</a>
@@ -32,27 +31,57 @@
 		</div>
 
 		<div id="main">
+
 			<h1>Join A Session</h1>
-            {% if sesh %}
-            <div class="container">
-                <h3 style="color: green;">Success</h3>
-                <h2><a href="room" role="button">Begin Session</a></h2>
-            </div>
-            {% else %}
             <br>
 			<h2>Enter a Session ID to join the session</h2>
             <br>
-            <h3 style="color:red;">{{  sessioninfo }}</h3>
-            <form method="POST">
-                <input type="text" name="sname" value="" placeholder="Enter Session ID"> <br> 
-                <input class="submit" type="submit" value="Submit">
-            </form>
+            {% if sessioninfo %}
+                <h3 style="color:red;">{{ sessioninfo }}</h3>
             {% endif %}
-            <br><br>
+            <form method="POST">
+                <input type = "text" name = "sname" value="" placeholder="Enter Session ID"> <br>
+                <input class="submit" type="submit" value="Join">
+            </form>
+            <br><br><br>
 		</div>
 	</div>
 
 
 
 </body>
+<!--
+<body>
+	<div id="mySidenav" class="sidenav">
+		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="{{ url_for('home') }}">Home</a>
+		<a href="{{ url_for('get_info') }}">Session Info</a>
+		<a href="{{ url_for('logout') }}">Logout</a>
+	</div>
+
+	 Menu bars 
+	<div class="container-left">
+		<div class="menu">
+			<a href="#">
+			<span onclick="openNav()">&equiv;</span>
+			</a>
+		</div>
+
+		<div id="main">
+			<h1>Join A Session</h1>
+            <br>
+			<h2>Enter a Session ID to join the session</h2>
+            <br>
+            {% if sessioninfo %}
+                <h3 style="color:red;"> {{  sessioninfo }}</h3>
+            {% endif %}
+            <form method="POST">
+                <input type="text" name="sname" value="" placeholder="Enter Session ID"> <br> 
+                <input class="submit" type="submit" value="Submit">
+            </form>
+            <br><br>
+		</div>
+	</div>
+</body>
+-->
 </html>

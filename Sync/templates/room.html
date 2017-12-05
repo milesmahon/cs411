@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sync | Host</title>
+    <title>Sync | Session</title>
 
         <!--Bootstrap CSS-->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
@@ -18,12 +18,12 @@
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
         <a href="#" class="active">Home</a>
         <a href="{{ url_for('get_info') }}">Session Info</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
         {% if current_user.id in hosts %}
         <a href="{{ url_for('home') }}">End Session</a>
         {% else %}
         <a href="{{ url_for('home') }}">Exit Session</a>
         {% endif %}
+        <a href="{{ url_for('logout') }}">Logout</a>
 	</div>
 
 	<!-- Menu bars -->
