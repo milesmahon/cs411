@@ -110,6 +110,9 @@ def host():
 def host_sesh_create():
         text = request.form['sname']
         processed_text = text.upper()
+        if processed_text in SESSION_USERS:
+            sessionerror = "ERROR, SESSION ALREADY EXISTS"
+            return redirect(url_for('host', sessionerror=sessionerror))
         SESSION_USERS[processed_text].append(tuple((current_user.name,current_user.id)))
         hostl.append(current_user.name)
         sessioninfo = SESSION_USERS[processed_text]
@@ -180,7 +183,7 @@ def end():
     for key, values in SESSION_USERS.iteritems():
         if current_user.name in values[0]:
             del SESSION_USERS[key]
-            hostl.remove(current_user.id)
+            hostl.remove(current_user.name)
             break
     print("NEW DICT = ", SESSION_USERS)
     return render_template('home.html')
