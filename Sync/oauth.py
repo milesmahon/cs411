@@ -130,8 +130,6 @@ class SpotifySignIn(OAuthSignIn):
         #print(me['id'])
         #return (
          #   'spotify$' + me['id'],
-          #  me.get('email').split('@')[0],  # Facebook does not provide
-                                            # username, so the email
-                                            # is used instead
+          #  me.get('email').split('@')[0],
            # me.get('email')
         #)

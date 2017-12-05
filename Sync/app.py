@@ -11,6 +11,8 @@ import config
 import requests
 import json
 from collections import defaultdict
+from array import array
+import numpy as np
 
 
 
@@ -188,7 +190,6 @@ def pause(session):
     hosts = hostl
     print(users)
     for user in users:
-        print(user)
         access_token = ACCESS_TOKEN[str(user)]
         auth_header = {"Authorization": "Bearer {}".format(access_token)}
         pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
@@ -196,8 +197,8 @@ def pause(session):
         print(pause_response)
     return redirect(url_for('room', sessionname = session, hosts = hosts))
 
-@app.route('/play') #TODO: correct url? same q for pause method
-def play():
+@app.route('/play/<session>') #TODO: correct url? same q for pause method
+def play(session):
     #dummy header for other play method
 
     print(ACCESS_TOKEN)
@@ -209,41 +210,49 @@ def play():
     context_data = context_response.json()
     print(json.dumps(context_data, indent=4, sort_keys=True))
 
-    return play(context_data)
+    return play(context_data, session)
 
-def play(song_info):
+def play(song_info,session):
     #takes json song info and plays selected song at correct time
     #currently ASSUMES the user is not at the same point in song/same song as host
 
     #/me/player endpoint gives us song_info json
 
     #for /play endpoint
-    context_uri = song_info['item']['uri'] #get context uri of song
+    hosts = hostl
+    context = song_info['item']
+    print(context)
+    track = (song_info['item']['track_number'])-1 #get context uri of song
+    trackname = song_info['item']
+    context_uri = song_info['item']['album']['uri']
+    print(track)
+    print(context_uri)
 
     #for /seek endpoint
     position_ms = song_info['progress_ms']
 
     # hit /play endpoint
-    access_token = ACCESS_TOKEN[str(current_user.id)]
-    auth_header = {"Authorization": "Bearer {}".format(access_token)}
-    play_endpoint = "https://api.spotify.com/v1/me/player/play"
-    play_response = requests.put(play_endpoint, headers=auth_header, params={('context_uri', context_uri)})
-    print(ACCESS_TOKEN)
-    if play_response:
-        print(play_response.text)
+    users = SESSION_USERS[session]
+    for user in users:
+        access_token = ACCESS_TOKEN[str(user)]
+        auth_header = {"Authorization": "Bearer {}".format(access_token)}
+        play_endpoint = "https://api.spotify.com/v1/me/player/play"
+        payload = {'context_uri': context_uri,
+                   'offset': {'position': track}}
+        play_response = requests.put(play_endpoint,
+                                     data = json.dumps(payload),
+                                     headers=auth_header,
+                                     )
+        print("play_respnse" + play_response.text)
+      # if play_response:
+       #     print("play response =" + play_response.text)
 
-
-    #TODO:TESTING only! this next line
-    position_ms = 100000
-
-    # hit /seek endpoint
-    seek_endpoint = "https://api.spotify.com/v1/me/player/seek"
-    seek_response = requests.put(seek_endpoint, headers=auth_header, params={('position_ms', position_ms)})
-    print(ACCESS_TOKEN)
-    if seek_response:
-        print(seek_response.text)
-    return redirect(url_for('room'))
-    # return redirect(url_for('home'))
+        #hit /seek endpoint
+        seek_endpoint = "https://api.spotify.com/v1/me/player/seek"
+        seek_response = requests.put(seek_endpoint, headers=auth_header, params={('position_ms', position_ms),})
+        #if seek_response:
+         #   print(seek_response.text)
+    return redirect(url_for('room', sessionname = session, hosts = hosts))
 
 
 #@app.route('/showLogIn')
@@ -277,58 +286,6 @@ def oauth_callback(provider):
     # global ACCESS_TOKEN
     ACCESS_TOKEN[str(current_user.id)] = access_token
     return redirect(url_for('index'))
-
-@socketio.on('join', namespace='/test')
-def join(message):
-    join_room(message['room'])
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': 'In rooms: ' + ', '.join(rooms()),
-          'count': session['receive_count']})
-
-
-@socketio.on('leave', namespace='/test')
-def leave(message):
-    leave_room(message['room'])
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': 'In rooms: ' + ', '.join(rooms()),
-          'count': session['receive_count']})
-
-
-@socketio.on('close_room', namespace='/test')
-def close(message):
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response', {'data': 'Room ' + message['room'] + ' is closing.',
-                         'count': session['receive_count']},
-         room=message['room'])
-    close_room(message['room'])
-
-
-@socketio.on('my_room_event', namespace='/test')
-def send_room_message(message):
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': message['data'], 'count': session['receive_count']},
-         room=message['room'])
-
-
-@socketio.on('disconnect_request', namespace='/test')
-def disconnect_request():
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': 'Disconnected!', 'count': session['receive_count']})
-    disconnect()
-
-
-
-@socketio.on('connect', namespace='/test')
-def test_connect():
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(target=background_thread)
-    emit('my_response', {'data': 'Connected', 'count': 0})
 
 
 if __name__ == "__main__":
