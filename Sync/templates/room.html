@@ -54,6 +54,12 @@
             </div>
             {% endif %}
         </div>
+        {%  if events %}
+           <h2>Some related events:</h2>
+           {% for event in events %}
+               <h4><a href="{{ event[1] }}">{{ event[0] }}</a></h4>
+           {% endfor %}
+       {% endif %}
     </div>
     </div>
 </body>
