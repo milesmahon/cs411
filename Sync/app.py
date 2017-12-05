@@ -79,11 +79,6 @@ def index():
     return render_template('index.html')
 
 
-@app.route("/host")
-def host():
-    hostl.append(current_user.id)
-    return render_template('host.html', async_mode=socketio.async_mode)
-
 
 @app.route("/guest")
 def guest():
@@ -94,30 +89,18 @@ def guest_sesh_join():
     text = request.form['sname']
     processed_text = text.upper()
     if SESSION_USERS[processed_text]:
-        hosts = hostl
-        access_token = ACCESS_TOKEN[str(current_user.id)]
-        auth_header = {"Authorization": "Bearer {}".format(access_token)}
-        context_endpoint = "https://api.spotify.com/v1/me/player"
-        context_response = requests.get(context_endpoint, headers=auth_header)
-        context_data = json.loads(context_response.text)
         SESSION_USERS[processed_text].append(current_user.id)
-        sessioninfo = SESSION_USERS[processed_text]
-        print("Success")
-
-
-        return render_template('room.html',sessioninfo = sessioninfo, sesh = processed_text, context_data = context_data, hosts = hosts)
-
+        return redirect(url_for('room', sessionname = processed_text))
     else:
         sessioninfo = "Session does not exist"
         print(sessioninfo)
-    return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
-    """
-        return render_template('room.html',sessioninfo = sessioninfo, sesh = processed_text)
-    else:
-        sessioninfo = "Session does not exist"
         return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
-    """
 
+
+@app.route("/host")
+def host():
+    hostl.append(current_user.id)
+    return render_template('host.html', async_mode=socketio.async_mode)
 
 @app.route("/host", methods = ['POST'])
 def host_sesh_create():
@@ -126,26 +109,27 @@ def host_sesh_create():
         SESSION_USERS[processed_text].append(current_user.id)
         hostl.append(current_user.id)
         sessioninfo = SESSION_USERS[processed_text]
-        return redirect(url_for('loading', sesh = processed_text))
+        return redirect(url_for('loading', sessionname = processed_text))
 
-@app.route('/loading')
-def loading():
-	return render_template('loading.html')
+@app.route('/loading/<sessionname>')
+def loading(sessionname):
+	return render_template('loading.html', sessionname = sessionname)
+
 
 @app.route('/home')
 def home():
 	return render_template('home.html')
 
-@app.route('/room')
-def room():
+@app.route('/room/<sessionname>')
+def room(sessionname):
     hosts = hostl
     access_token = ACCESS_TOKEN[str(current_user.id)]
     auth_header = {"Authorization":"Bearer {}".format(access_token)}
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
-    return render_template('room.html', hosts=hosts, context_data=context_data)
-
+    return render_template('room.html', hosts=hosts, context_data=context_data, sessionname = sessionname)
+"""
 @app.route('/guest_home')
 def guest_home():
     access_token = ACCESS_TOKEN[str(current_user.id)]
@@ -167,6 +151,7 @@ def host_home():
     if context_response:
         context_data = context_response.json()
     return render_template('host_home.html', context_data=context_data)
+    """
 
 @app.route('/logout')
 def logout():
@@ -197,14 +182,19 @@ def get_info():
     context_data =  json.loads(context_response.text)
     return render_template('info.html', context_data=context_data)
 """
-@app.route('/pause')
-def pause(user):
-    access_token = ACCESS_TOKEN[str(user)]
-    auth_header = {"Authorization": "Bearer {}".format(access_token)}
-    pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
-    pause_response = requests.put(pause_endpoint, headers=auth_header)
-    print(pause_response)
-    return redirect(url_for('host_home'))
+@app.route('/pause/<session>')
+def pause(session):
+    users = SESSION_USERS[session]
+    hosts = hostl
+    print(users)
+    for user in users:
+        print(user)
+        access_token = ACCESS_TOKEN[str(user)]
+        auth_header = {"Authorization": "Bearer {}".format(access_token)}
+        pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
+        pause_response = requests.put(pause_endpoint, headers=auth_header)
+        print(pause_response)
+    return redirect(url_for('room', sessionname = session, hosts = hosts))
 
 @app.route('/play') #TODO: correct url? same q for pause method
 def play():
