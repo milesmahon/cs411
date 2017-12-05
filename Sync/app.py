@@ -12,7 +12,6 @@ import requests
 import json
 from collections import defaultdict
 from array import array
-import numpy as np
 
 
 
@@ -93,7 +92,7 @@ def guest_sesh_join():
     text = request.form['sname']
     processed_text = text.upper()
     if SESSION_USERS[processed_text]:
-        SESSION_USERS[processed_text].append(current_user.name)
+        SESSION_USERS[processed_text].append(tuple((current_user.name,current_user.id)))
         sessioninfo = SESSION_USERS[processed_text]
         print("Success")
         return redirect(url_for('room', sessionname = processed_text))
@@ -104,14 +103,14 @@ def guest_sesh_join():
 
 @app.route("/host")
 def host():
-    hostl.append(current_user.id)
+    #hostl.append(current_user.id)
     return render_template('host.html', async_mode=socketio.async_mode)
 
 @app.route("/host", methods = ['POST'])
 def host_sesh_create():
         text = request.form['sname']
         processed_text = text.upper()
-        SESSION_USERS[processed_text].append(current_user.name)
+        SESSION_USERS[processed_text].append(tuple((current_user.name,current_user.id)))
         hostl.append(current_user.name)
         sessioninfo = SESSION_USERS[processed_text]
         return redirect(url_for('loading', sessionname = processed_text))
@@ -122,7 +121,7 @@ def loading(sessionname):
     users = SESSION_USERS.get(sessionname)
     for x in users:
         #if x not in hostl:
-        in_session += ("\n" + x)
+        in_session += ("\n" + x[0])
 	return render_template('loading.html', sessionname=sessionname, in_session=in_session)
 
 @app.route('/room/<sessionname>')
@@ -187,10 +186,10 @@ def logout():
 @app.route('/exit')
 def exit():
     print("CURRENT DICT = ", SESSION_USERS)
-    for key, values in SESSION_USERS.iteritems():
-        if current_user.name in values:
-            new_val = values.remove(current_user.name)
-            SESSION_USERS[key] = new_val
+    for value in SESSION_USERS.values():
+        if tuple((current_user.name,current_user.id)) in value:
+            print('exit!!!')
+            value.remove(tuple((current_user.name,current_user.id)))
     print("NEW DICT = ", SESSION_USERS)
     return render_template('home.html')
 
@@ -198,9 +197,9 @@ def exit():
 def end():
     print("CURRENT DICT = ", SESSION_USERS)
     for key, values in SESSION_USERS.iteritems():
-        if current_user.name in values:
+        if current_user.name in values[0]:
             del SESSION_USERS[key]
-            hostl.remove(current_user.name)
+            hostl.remove(current_user.id)
             break
     print("NEW DICT = ", SESSION_USERS)
     return render_template('home.html')
@@ -211,15 +210,15 @@ def get_info(sessionname):
     in_session = ""
     session_id = ""
     host = ""
-    for key, values in SESSION_USERS.iteritems():
-        if current_user.name in values:
-            users = values
+    for key in SESSION_USERS.keys():
+        if sessionname == key:
             session_id = key
-            for x in users:
-                if x in hostl:
-                    host = x
+            for x in SESSION_USERS[key]:
+                print hostl
+                if x[0] in hostl:
+                    host = x[0]
                 else:
-                    in_session += ("\n" + x)
+                    in_session += ("\n" + x[0])
 
     access_token = ACCESS_TOKEN[str(current_user.id)]
     print(access_token)
@@ -247,9 +246,8 @@ def get_info():
 def pause(session):
     users = SESSION_USERS[session]
     hosts = hostl
-    print(users)
     for user in users:
-        access_token = ACCESS_TOKEN[str(user)]
+        access_token = ACCESS_TOKEN[str(user[1])]
         auth_header = {"Authorization": "Bearer {}".format(access_token)}
         pause_endpoint = "https://api.spotify.com/v1/me/player/pause"
         pause_response = requests.put(pause_endpoint, headers=auth_header)
@@ -260,7 +258,6 @@ def pause(session):
 def play(session):
     #dummy header for other play method
 
-    print(ACCESS_TOKEN)
     access_token = ACCESS_TOKEN[str(current_user.id)]
     # print("access token = " + access_token)
     auth_header = {"Authorization": "Bearer {}".format(access_token)}
@@ -293,7 +290,7 @@ def play(song_info,session):
     # hit /play endpoint
     users = SESSION_USERS[session]
     for user in users:
-        access_token = ACCESS_TOKEN[str(user)]
+        access_token = ACCESS_TOKEN[str(user[1])]
         auth_header = {"Authorization": "Bearer {}".format(access_token)}
         play_endpoint = "https://api.spotify.com/v1/me/player/play"
         payload = {'context_uri': context_uri,
