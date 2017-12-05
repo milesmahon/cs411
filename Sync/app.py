@@ -135,7 +135,26 @@ def room(sessionname):
     context_endpoint = "https://api.spotify.com/v1/me/player"
     context_response = requests.get(context_endpoint, headers=auth_header)
     context_data =  json.loads(context_response.text)
-    return render_template('room.html', hosts=hosts, context_data=context_data, sessionname = sessionname)
+
+    # eventbrite info
+    artists = context_data['item']['artists']
+    access_token = "ST6W4BKCJNWSDELYV7SS"
+    auth_header = {"Authorization": "Bearer {}".format(access_token)}
+    event_endpoint = "https://www.eventbriteapi.com/v3/events/search/"
+
+    events = []
+    for artist in artists:
+        query = artist['name']
+        event_response = requests.get(event_endpoint, headers=auth_header, params={('q', query)})
+        for i in range(5):
+            try:
+                link = event_response.json()['events'][i]['url']
+                event = (event_response.json()['events'][i]['name']['text'], link)
+                events.append(event)
+            except:
+                print("tried to get too many events")
+    print(events)
+    return render_template('room.html', hosts=hosts, context_data=context_data, sessionname=sessionname, events=events)
 
 """
 @app.route('/guest_home')
