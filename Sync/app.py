@@ -12,7 +12,6 @@ import requests
 import json
 from collections import defaultdict
 from array import array
-import numpy as np
 
 
 
@@ -168,10 +167,10 @@ def logout():
 @app.route('/exit')
 def exit():
     print("CURRENT DICT = ", SESSION_USERS)
-    for key, values in SESSION_USERS.iteritems():
-        if current_user.name in values:
-            new_val = values.remove(current_user.name,current_user.id)
-            SESSION_USERS[key] = new_val
+    for value in SESSION_USERS.values():
+        if tuple((current_user.name,current_user.id)) in value:
+            print('exit!!!')
+            value.remove(tuple((current_user.name,current_user.id)))
     print("NEW DICT = ", SESSION_USERS)
     return render_template('home.html')
 
@@ -179,7 +178,7 @@ def exit():
 def end():
     print("CURRENT DICT = ", SESSION_USERS)
     for key, values in SESSION_USERS.iteritems():
-        if current_user.name in values:
+        if current_user.name in values[0]:
             del SESSION_USERS[key]
             hostl.remove(current_user.id)
             break
