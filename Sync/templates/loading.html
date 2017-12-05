@@ -36,9 +36,9 @@
 		<div id="main">
 
                 <meta http-equiv="refresh" content="2">
-                <h2>Waiting for guests to join session: {{ sesh }}</h2>
+                <h2>Waiting for guests to join session: {{ sessionname }}</h2>
                 <div class="loader"></div>
-                <h2><a href="room" role="button">Begin Session</a></h2>
+                <h2><a href="{{ url_for('room', sessionname = sessionname) }}" role="button">Begin Session</a></h2>
 
         </div>
 	</div>

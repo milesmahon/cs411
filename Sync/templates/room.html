@@ -43,7 +43,7 @@
                 <p><b>{{ context_data['item']['artists'][0]['name']}}</b>
                 <br>{{ context_data['item']['album']['name']}}</p>
                     <a href=" {{ url_for('play') }}" class="play">&#9658;</a>
-                    <a href=" {{ url_for('pause') }}" class="pause"><b>||</b></a>
+                    <a href=" {{ url_for('pause',session = sessionname) }}" class="pause"><b>||</b></a>
             </div>
             {% else %}
             <div class="player">
@@ -51,7 +51,7 @@
                 <h2>&quot;{{ context_data['item']['name'] }}&quot;</h2>
                 <p><b>{{ context_data['item']['artists'][0]['name']}}</b>
                 <br>{{ context_data['item']['album']['name']}}</p>
-                <!--<a href=" {{ url_for('pause') }}">Pause</a>-->
+
             </div>
             {% endif %}
         </div>
