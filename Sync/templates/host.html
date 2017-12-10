@@ -38,6 +38,9 @@
             <br>
             <h2>Enter a Session ID to create the session</h2>
             <br>
+            {% if sessionerror %}
+                ERROR:SESSION ALREADY EXISTS <br>
+            {% endif %}
             <form method="POST">
                 <input type="text" name="sname" value="" placeholder="Enter Session ID">
                 <br>

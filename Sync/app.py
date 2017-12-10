@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, url_for, request, redirect, session, flash
+from flask import Flask, render_template, request, url_for, request, redirect, \
+    session, flash, jsonify, send_from_directory
 from threading import Lock
 from flask_sqlalchemy import SQLAlchemy
 from oauth import OAuthSignIn
@@ -73,6 +74,8 @@ def background_thread():
                       {'data': 'Server generated event', 'count': count},
                       namespace='/test')
 
+
+
 @app.route("/")
 def index():
     if current_user.is_anonymous or not str(current_user.id) in ACCESS_TOKEN:
@@ -91,7 +94,7 @@ def guest():
 def guest_sesh_join():
     text = request.form['sname']
     processed_text = text.upper()
-    if SESSION_USERS[processed_text]:
+    if processed_text in SESSION_USERS.keys():
         SESSION_USERS[processed_text].append(tuple((current_user.name,current_user.id)))
         sessioninfo = SESSION_USERS[processed_text]
         print("Success")
@@ -99,7 +102,7 @@ def guest_sesh_join():
     else:
         sessioninfo = "Session does not exist"
         print(sessioninfo)
-        return render_template('guest.html',sessioninfo = sessioninfo, sesh = processed_text)
+        return render_template('guest.html',sessioninfo = sessioninfo)
 
 @app.route("/host")
 def host():
@@ -110,19 +113,25 @@ def host():
 def host_sesh_create():
         text = request.form['sname']
         processed_text = text.upper()
+        if processed_text in SESSION_USERS:
+            sessionerror = "ERROR, SESSION ALREADY EXISTS"
+            return redirect(url_for('host', sessionerror=sessionerror))
         SESSION_USERS[processed_text].append(tuple((current_user.name,current_user.id)))
         hostl.append(current_user.name)
         sessioninfo = SESSION_USERS[processed_text]
         return redirect(url_for('loading', sessionname = processed_text))
 
+@app.route('/get_data/<sessionname>')
+def get_data(sessionname):
+    in_session = ""
+    users = SESSION_USERS[sessionname]
+    for user in users:
+        in_session += ("\n" + user[0])
+    return in_session
+
 @app.route('/loading/<sessionname>')
 def loading(sessionname):
-    in_session = ""
-    users = SESSION_USERS.get(sessionname)
-    for x in users:
-        #if x not in hostl:
-        in_session += ("\n" + x[0])
-	return render_template('loading.html', sessionname=sessionname, in_session=in_session)
+	return render_template('loading.html', sessionname=sessionname, in_session= get_data(sessionname))
 
 @app.route('/room/<sessionname>')
 def room(sessionname):
@@ -199,7 +208,7 @@ def end():
     for key, values in SESSION_USERS.iteritems():
         if current_user.name in values[0]:
             del SESSION_USERS[key]
-            hostl.remove(current_user.id)
+            hostl.remove(current_user.name)
             break
     print("NEW DICT = ", SESSION_USERS)
     return render_template('home.html')
